@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Reportes - Dejando Huella</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+</head>
+<body>
+  <header class="header d-flex align-items-center sticky-top">
+    <div class="container-fluid container-xl position-relative d-flex align-items-center justify-content-between">
+      <a href="index.html" class="logo d-flex align-items-center me-auto">
+        <h1 class="sitename">Dejando Huella</h1>
+      </a>
+      <nav class="navmenu">
+        <ul>
+          <li><a href="index.html">Inicio</a></li>
+          <li><a href="MascotasDisponibles.html">Mascotas</a></li>
+          <li><a href="EventosDisponibles.html">Eventos</a></li>
+          <li><a href="CampaniasDIsponibles.html">Campañas</a></li>
+          <li><a class="btn btn-primary btn-sm text-white" href="register.html">Registro</a></li>
+          <li><a class="btn btn-success btn-sm text-white" href="login.html">Login</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container py-5">
+    <h2 class="text-center mb-4">Reportes del Sistema</h2>
+
+    <div class="mb-4 text-right">
+      <button class="btn btn-primary"><i class="fas fa-file-download"></i> Generar PDF</button>
+    </div>
+
+    <div class="table-responsive">
+      <table class="table table-bordered table-striped">
+        <thead class="thead-dark">
+          <tr>
+            <th>Tipo de Reporte</th>
+            <th>Descripción</th>
+            <th>Fecha Generado</th>
+            <th>Generado por</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="reportesTable">
+          <tr>
+            <td>Adopciones</td>
+            <td>Listado de adopciones exitosas del mes</td>
+            <td>2025-07-10</td>
+            <td>admin@dejandohuella.org</td>
+            <td>
+              <button class="btn btn-success btn-sm"><i class="fas fa-eye"></i></button>
+              <button class="btn btn-secondary btn-sm"><i class="fas fa-download"></i></button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </main>
+
+  <footer class="text-center py-3 bg-light">
+    <p>&copy; 2025 Dejando Huella. Todos los derechos reservados.</p>
+  </footer>
+
+  <script src="js/utils.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>

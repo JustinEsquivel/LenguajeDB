@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Dejando Huella</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <script src="script.js"></script>
+</head>
+<body>
+    <script>localStorage.removeItem('user');</script>
+    <header id="header" class="header d-flex align-items-center sticky-top">
+        <div class="container-fluid container-xl position-relative d-flex align-items-center justify-content-between">
+            <a href="index.html" class="logo d-flex align-items-center me-auto">
+                <h1 class="sitename">Dejando Huella</h1>
+            </a>
+ 
+            <nav id="navmenu" class="navmenu">
+                <ul>
+                    <li><a href="index.html">Inicio</a></li>
+                    <li><a href="Mascotas/mascotasDisponibles.html">Mascotas</a></li>
+                    <li><a href="EventosDisponibles.html">Eventos</a></li>
+                    <li><a href="CampaniasDIsponibles.html">Campañas</a></li>
+                    <li><a class="btn btn-primary btn-sm text-white" href="register.html">Registro</a></li>
+                    <li><a class="btn btn-success btn-sm text-white" href="login.html">Login</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+ 
+    <div class="home-container">
+ 
+        <div class="jumbotron-fluid text-center text-white py-5 mb-0" style="background-color: #10bc69 !important;">
+            <div class="container">
+                <h1 class="display-4 text-white">Bienvenido a Dejando Huella</h1>
+                <p class="lead text-white">Sistema integral de gestión para protectora de animales</p>
+                <hr class="my-4 bg-light">
+                <p>Plataforma unificada para el manejo de todos los procesos de la organización</p>
+            </div>
+        </div>
+ 
+        <div class="bg-light py-4">
+            <div class="container">
+                <div class="row text-center">
+                    <div class="col-md-3">
+                        <h3 class="text-green" id="mascotasCount">0</h3>
+                        <p class="mb-0">Mascotas rescatadas</p>
+                    </div>
+                    <div class="col-md-3">
+                        <h3 class="text-green" id="adopcionesCount">0</h3>
+                        <p class="mb-0">Adopciones exitosas</p>
+                    </div>
+                    <div class="col-md-3">
+                        <h3 class="text-green" id="campaniasCount">0</h3>
+                        <p class="mb-0">Campañas activas</p>
+                    </div>
+                    <div class="col-md-3">
+                        <h3 class="text-green" id="voluntariosCount">0</h3>
+                        <p class="mb-0">Voluntarios activos</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+ 
+        <div class="container py-5">
+            <h2 class="text-center mb-4">Módulos Principales</h2>
+            <div class="row">
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-icon bg-info text-white text-center py-3">
+                            <i class="fas fa-paw fa-3x"></i>
+                        </div>
+                        <div class="card-body text-center">
+                            <h5 class="card-title">Mascotas</h5>
+                            <p class="card-text">Echa un vistazo a las mascotas disponibles.</p>
+                            <div class="btn-group" role="group">
+                                <a href="Mascotas/mascotasDisponibles.html" class="btn btn-success">
+                                    <i class="fas fa-list"></i> Listado
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-icon bg-success text-white text-center py-3">
+                            <i class="fas fa-calendar-alt fa-3x"></i>
+                        </div>
+                        <div class="card-body text-center">
+                            <h5 class="card-title">Eventos</h5>
+                            <p class="card-text">¡Echa un vistazo a los eventos disponibles!</p>
+                            <div class="btn-group" role="group">
+                                <a href="EventosDisponibles.html" class="btn btn-success">
+                                    <i class="fas fa-list"></i> Listado
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-icon bg-warning text-white text-center py-3">
+                            <i class="fas fa-hand-holding-heart fa-3x"></i>
+                        </div>
+                        <div class="card-body text-center">
+                            <h5 class="card-title">Campañas</h5>
+                            <p class="card-text">¡Echa un vistazo a las campañas activas!</p>
+                            <div class="btn-group" role="group">
+                                <a href="CampaniasDIsponibles.html" class="btn btn-success">
+                                    <i class="fas fa-list"></i> Listado
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <footer>
+        <p>&copy; 2025 Dejando Huella. Todos los derechos reservados.</p>
+    </footer>
+    <script src="js/utils.js"></script>
+</body>
+</html>

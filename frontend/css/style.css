@@ -1,0 +1,265 @@
+body {
+    font-family: 'Segoe UI', sans-serif;
+}
+ 
+.home-container {
+    min-height: calc(100vh - 56px);
+}
+ 
+/* Jumbotron / Hero */
+.jumbotron {
+    border-radius: 0;
+    background: linear-gradient(135deg, #0069d9 0%, #004ba0 100%);
+}
+ 
+/* Tarjetas */
+.card-icon {
+    border-top-left-radius: 4px;
+    border-top-right-radius: 4px;
+}
+ 
+.card {
+    transition: transform 0.3s;
+    border: none;
+}
+ 
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+ 
+.btn-group {
+    display: flex;
+    justify-content: center;
+}
+ 
+.btn-group .btn {
+    flex: 1;
+    max-width: 120px;
+}
+ 
+/* Secciones */
+.bg-light-section {
+    background-color: #f8f9fa;
+}
+ 
+.text-green {
+    color: #10bc69 !important;
+}
+ 
+/* Header personalizado */
+.header {
+    background-color: #fff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    z-index: 999;
+}
+ 
+.header .navmenu ul {
+    list-style: none;
+    padding-left: 0;
+    margin-bottom: 0;
+    display: flex;
+    align-items: center;
+}
+ 
+.header .navmenu li {
+    margin-right: 20px;
+}
+ 
+.header .navmenu a {
+    text-decoration: none;
+    color: #333;
+    font-weight: 500;
+}
+ 
+.header .navmenu a:hover {
+    color: #10bc69;
+}
+ 
+.logo h1 {
+    font-size: 1.5rem;
+    margin: 0;
+    font-weight: bold;
+    color: gray;
+}
+ 
+.mobile-nav-toggle {
+    display: none;
+}
+ 
+@media (max-width: 768px) {
+    .header .navmenu ul {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+ 
+    .mobile-nav-toggle {
+        display: block;
+        cursor: pointer;
+    }
+}
+ 
+.table th,
+.table td {
+    vertical-align: middle;
+}
+ 
+.btn-sm {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+}
+ 
+.navmenu ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    gap: 1rem;
+}
+ 
+.navmenu ul li {
+    display: inline-block;
+}
+ 
+.navmenu ul li a {
+    text-decoration: none;
+    font-weight: bold;
+    color: #000;
+}
+ 
+.sitename {
+    font-size: 1.8rem;
+    font-weight: bold;
+    color: #10bc69;
+}
+ 
+.header {
+    background-color: #f8f9fa;
+    padding: 1rem;
+}
+ 
+.imagen-mascota {
+    width: 100%;
+    height: 100;
+    object-fit: cover;
+}
+ 
+.table th,
+.table td {
+    vertical-align: middle;
+}
+ 
+.btn-sm {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+}
+ 
+.login-container {
+    max-width: 400px;
+    margin: 50px auto;
+    padding: 30px;
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+ 
+.login-container h2 {
+    margin-bottom: 30px;
+    color: #333;
+    text-align: center;
+}
+ 
+body {
+    background-color: #f8f9fa;
+}
+ 
+.module-card {
+    min-height: 180px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+ 
+.module-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+}
+ 
+.module-card .card-icon {
+    font-size: 3.5rem;
+    margin-bottom: 15px;
+    color: #10bc69;
+}
+ 
+.module-card .card-title {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #333;
+}
+ 
+.logout-btn {
+    margin-left: 20px;
+}
+ 
+.register-container {
+    max-width: 500px;
+    margin: 50px auto;
+    padding: 30px;
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+ 
+.register-container h2 {
+    margin-bottom: 30px;
+    color: #333;
+    text-align: center;
+}
+ 
+.table th,
+.table td {
+    vertical-align: middle;
+}
+ 
+.btn-sm {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+}
+ 
+.card-img-top {
+    height: 200px;
+    object-fit: cover;
+}
+ 
+.navmenu ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    gap: 10px;
+}
+ 
+.navmenu a {
+    text-decoration: none;
+    padding: 6px 12px;
+}
+ 
+.navmenu .btn {
+    padding: 5px 12px;
+    font-size: 0.9rem;
+}
+ 
+header {
+    background: #f8f9fa;
+    padding: 15px 0;
+    border-bottom: 1px solid #ddd;
+}
+ 
+.sitename {
+    font-size: 24px;
+    font-weight: bold;
+    margin: 0;
+}

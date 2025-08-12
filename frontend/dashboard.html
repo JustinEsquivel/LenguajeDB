@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Dejando Huella</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+</head>
+
+<body>
+    <header>
+        <header id="header" class="header d-flex align-items-center sticky-top">
+            <div
+                class="container-fluid container-xl position-relative d-flex align-items-center justify-content-between">
+                <a href="dashboard.html" class="logo d-flex align-items-center me-auto">
+                    <h1>Dejando Huella</h1>
+                </a>
+                <nav id="navmenu" class="navmenu">
+                    <ul>
+                        <li><a href="dashboard.html">Home</a></li>
+                        <li><a href="mascotas.html">Mascotas</a></li>
+                        <li><a href="eventos.html">Eventos</a></li>
+                        <li><a href="campanias.html">Campañas</a></li>
+                        <li><a href="usuarios.html">Usuarios</a></li>
+                        <li><a href="Voluntarios.html">Voluntarios</a></li>
+                        <li><a href="Reportes.html">Reportes</a></li>
+                        <li><a href="Inventario.html">Inventario</a></li>
+                        <li></li>
+                        <li><a class="btn btn-danger btn-sm text-white logout-btn" href="index.html">Cerrar Sesión</a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </header>
+    </header>
+    <main>
+        <section class="dashboard">
+            <div class="container py-5">
+                <h1 class="display-4 text-center mb-5">Bienvenido, <span id="userName"></span></h2>
+                <h1 class="display-4 text-center mb-5">Panel de Administración</h1>
+
+                <div class="container py-5">
+                    <h2 class="text-center mb-4">Módulos Principales</h2>
+                    <div class="row">
+                        <div class="col-md-4 mb-4">
+                            <div class="card h-100 shadow-sm">
+                                <div class="card-icon bg-info text-white text-center py-3">
+                                    <i class="fas fa-paw fa-3x"></i>
+                                </div>
+                                <div class="card-body text-center">
+                                    <h5 class="card-title">Mascotas</h5>
+                                    <p class="card-text">Echa un vistazo a las mascotas disponibles.</p>
+                                    <div class="btn-group" role="group">
+                                        <a href="mascotas.html" class="btn btn-success">
+                                            <i class="fas fa-list"></i> Listado
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-4">
+                            <div class="card h-100 shadow-sm">
+                                <div class="card-icon bg-success text-white text-center py-3">
+                                    <i class="fas fa-calendar-alt fa-3x"></i>
+                                </div>
+                                <div class="card-body text-center">
+                                    <h5 class="card-title">Eventos</h5>
+                                    <p class="card-text">¡Echa un vistazo a los eventos disponibles!</p>
+                                    <div class="btn-group" role="group">
+                                        <a href="eventos.html" class="btn btn-success">
+                                            <i class="fas fa-list"></i> Listado
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-4">
+                            <div class="card h-100 shadow-sm">
+                                <div class="card-icon bg-warning text-white text-center py-3">
+                                    <i class="fas fa-hand-holding-heart fa-3x"></i>
+                                </div>
+                                <div class="card-body text-center">
+                                    <h5 class="card-title">Campañas</h5>
+                                    <p class="card-text">¡Echa un vistazo a las campañas activas!</p>
+                                    <div class="btn-group" role="group">
+                                        <a href="campanias.html" class="btn btn-success">
+                                            <i class="fas fa-list"></i> Listado
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-4">
+                            <div class="card h-100 shadow-sm">
+                                <div class="card-icon bg-info text-white text-center py-3">
+                                    <i class="fas fa-handshake fa-3x"></i>
+                                </div>
+                                <div class="card-body text-center">
+                                    <h5 class="card-title">Voluntarios</h5>
+                                    <p class="card-text">Echa un vistazo a los voluntarios.</p>
+                                    <div class="btn-group" role="group">
+                                        <a href="Voluntarios.html" class="btn btn-success">
+                                            <i class="fas fa-list"></i> Listado
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-4">
+                            <div class="card h-100 shadow-sm">
+                                <div class="card-icon bg-success text-white text-center py-3">
+                                    <i class="fas fa-chart-bar fa-3x"></i>
+                                </div>
+                                <div class="card-body text-center">
+                                    <h5 class="card-title">Reportes</h5>
+                                    <p class="card-text">Echa un vistazo a los reportes.</p>
+                                    <div class="btn-group" role="group">
+                                        <a href="Reportes.html" class="btn btn-success">
+                                            <i class="fas fa-list"></i> Listado
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-4">
+                            <div class="card h-100 shadow-sm">
+                                <div class="card-icon bg-warning text-white text-center py-3">
+                                    <i class="fas fa-boxes fa-3x"></i>
+                                </div>
+                                <div class="card-body text-center">
+                                    <h5 class="card-title">Inventario</h5>
+                                    <p class="card-text">Echa un vistazo al inventario.</p>
+                                    <div class="btn-group" role="group">
+                                        <a href="Inventario.html" class="btn btn-success">
+                                            <i class="fas fa-list"></i> Listado
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-4">
+                            <div class="card h-100 shadow-sm">
+                                <div class="card-icon bg-info text-white text-center py-3">
+                                    <i class="fas fa-users fa-3x"></i>
+                                </div>
+                                <div class="card-body text-center">
+                                    <h5 class="card-title">Usuarios</h5>
+                                    <p class="card-text">Echa un vistazo a la lista de usuarios.</p>
+                                    <div class="btn-group" role="group">
+                                        <a href="usuarios.html" class="btn btn-success">
+                                            <i class="fas fa-list"></i> Listado
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+    <footer>
+        <p>&copy; 2025 Dejando Huella. Todos los derechos reservados.</p>
+    </footer>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const user = JSON.parse(localStorage.getItem('user'));
+
+            if (user) {
+                
+                document.getElementById('userName').textContent = `${user.nombre} ${user.apellido}`;
+
+                document.getElementById('logoutBtn').addEventListener('click', function () {
+                    localStorage.removeItem('user');
+                    window.location.href = 'login.html';
+                });
+            } else {
+                window.location.href = 'login.html';
+            }
+        });
+    </script>
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+
+</html>
+
+</body>

@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Voluntarios - Dejando Huella</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+</head>
+<body>
+  <header class="header d-flex align-items-center sticky-top">
+    <div class="container-fluid container-xl position-relative d-flex align-items-center justify-content-between">
+      <a href="index.html" class="logo d-flex align-items-center me-auto">
+        <h1 class="sitename">Dejando Huella</h1>
+      </a>
+      <nav class="navmenu">
+        <ul>
+          <li><a href="index.html">Inicio</a></li>
+          <li><a href="MascotasDisponibles.html">Mascotas</a></li>
+          <li><a href="EventosDisponibles.html">Eventos</a></li>
+          <li><a href="CampaniasDIsponibles.html">Campañas</a></li>
+          <li><a class="btn btn-primary btn-sm text-white" href="register.html">Registro</a></li>
+          <li><a class="btn btn-success btn-sm text-white" href="login.html">Login</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container py-5">
+    <h2 class="text-center mb-4">Voluntarios Activos</h2>
+
+    <div class="mb-4 text-right">
+      <a href="registrarVoluntario.html" class="btn btn-success"><i class="fas fa-user-plus"></i> Registrar Voluntario</a>
+    </div>
+
+    <div class="table-responsive">
+      <table class="table table-bordered table-striped">
+        <thead class="thead-dark">
+          <tr>
+            <th>Nombre</th>
+            <th>Correo</th>
+            <th>Teléfono</th>
+            <th>Área de Apoyo</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="voluntariosTable">
+          <tr>
+            <td>Andrea Morales</td>
+            <td>andrea@example.com</td>
+            <td>8888-4444</td>
+            <td>Veterinaria</td>
+            <td>
+              <button class="btn btn-info btn-sm"><i class="fas fa-edit"></i></button>
+              <button class="btn btn-danger btn-sm"><i class="fas fa-trash-alt"></i></button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </main>
+
+  <footer class="text-center py-3 bg-light">
+    <p>&copy; 2025 Dejando Huella. Todos los derechos reservados.</p>
+  </footer>
+
+  <script src="js/utils.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
