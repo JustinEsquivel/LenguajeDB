@@ -1,64 +1,95 @@
+// src/app.js
 const path = require('path');
 const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const session = require('express-session');
-const flash = require('connect-flash'); // Añade esta línea
+const flash = require('connect-flash');
 
 const app = express();
 
-// Configuración CORS para desarrollo
-app.use(cors({
+// ==== CORS (desarrollo) ====
+const CORS_OPTS = {
   origin: ['http://localhost:5500', 'http://127.0.0.1:5500'],
   credentials: true
-}));
+};
+app.use(cors(CORS_OPTS));
+// Preflight
+app.options('*', cors(CORS_OPTS));
 
-// Configuración de sesión
+// ==== Sesión (en dev, secure: false) ====
+app.set('trust proxy', 1); // útil si en el futuro usas proxy
 app.use(session({
-    secret: 'tu_super_secreto_sesion', // Cambia esto en producción
-    resave: false,
-    saveUninitialized: false,
-    cookie: { 
-        secure: process.env.NODE_ENV === 'production', // Solo HTTPS en producción
-        maxAge: 24 * 60 * 60 * 1000 // 1 día
-    }
+  secret: 'tu_super_secreto_sesion', // ¡cámbialo en prod!
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    secure: false,        // en dev: false; en prod pon true + HTTPS
+    sameSite: 'lax',
+    maxAge: 24 * 60 * 60 * 1000
+  }
 }));
 
-// Flash messages (ahora sí está definido)
+// Flash
 app.use(flash());
 
-// Middleware para variables globales
+// Variables "globales" para vistas (si las usas)
 app.use((req, res, next) => {
-    res.locals.currentUser = req.session.user || null;
-    res.locals.successMessages = req.flash('success');
-    res.locals.errorMessages = req.flash('error');
-    next();
+  res.locals.currentUser = req.session.user || null;
+  res.locals.successMessages = req.flash('success');
+  res.locals.errorMessages = req.flash('error');
+  next();
 });
 
-// Middlewares para parsing
+// ==== Parsers ====
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-// Sirve archivos estáticos del frontend
+// ==== Static Frontend ====
 app.use(express.static(path.join(__dirname, '../frontend')));
 
-// Ruta para la raíz
+// Root -> index.html del frontend
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, '../frontend', 'index.html'));
 });
 
-// Rutas API
+// ==== Rutas API ====
 app.use('/api', require('./routes/usuarioRoutes'));
 app.use('/auth', require('./routes/authRoutes'));
 app.use('/api', require('./routes/mascotaRoutes'));
+app.use('/api', require('./routes/eventoRoutes'));
+app.use('/api', require('./routes/donacionCampanaRoutes'));
+app.use('/api', require('./routes/asistenciaRoutes'));
+app.use('/api', require('./routes/inventarioRoutes'));
+app.use('/api', require('./routes/adopcionRoutes'));
+app.use('/api', require('./routes/reporteRoutes'));
+app.use('/api', require('./routes/voluntarioRoutes'));
+app.use('/api', require('./routes/voluntarioActividadRoutes'));
+app.use('/api', require('./routes/historialRoutes'));
+app.use('/api', require('./routes/campanaRoutes'));
+app.use('/api/metrics', require('./routes/metricsRoutes'));
 
-// Manejo de errores
-app.use((err, req, res, next) => { 
-  console.error(err.stack); 
-  res.status(500).send('Algo salió mal!'); 
-}); 
 
-// Inicia el servidor
+// ==== Healthcheck (debug rápido) ====
+app.get('/health', (req, res) => {
+  res.json({ ok: true, time: new Date().toISOString() });
+});
+
+// ==== 404 JSON ====
+app.use((req, res) => {
+  res.status(404).json({ error: 'Recurso no encontrado' });
+});
+
+// ==== Error Handler JSON (dev) ====
+app.use((err, req, res, next) => {
+  console.error('❌ ERROR:', err);
+  const status = err.status || 500;
+  const message = err.message || 'Error interno';
+  const details = (err.stack || '').split('\n').slice(0, 2).join(' | ');
+  res.status(status).json({ error: message, details });
+});
+
+// ==== Start ====
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`✅ Servidor corriendo en http://localhost:${PORT}`);

@@ -1,134 +1,96 @@
+// models/evento.js
 const oracledb = require('oracledb');
-const { getConnection, closeConnection, getNextSeqValue } = require('../config/db');
+const { callProcedure, callFunctionCursor } = require('../config/db');
+
+/** Convierte "YYYY-MM-DDTHH:mm" (datetime-local) a Date local, seguro. */
+function toJsLocalDate(input) {
+  if (input instanceof Date && !isNaN(input)) return input;
+
+  if (typeof input === 'string') {
+    // Acepta "YYYY-MM-DDTHH:mm" y variantes ISO
+    // Si viene solo "YYYY-MM-DD", lo completamos con 00:00
+    const s = input.includes('T') ? input : `${input}T00:00`;
+    const m = s.match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):?(\d{2})?$/);
+    if (m) {
+      const [ , Y, M, D, H, I = '00' ] = m;
+      const y = parseInt(Y,10), mo = parseInt(M,10)-1, d = parseInt(D,10),
+            h = parseInt(H,10), mi = parseInt(I,10);
+      const dt = new Date(y, mo, d, h, mi, 0, 0); // ← local time
+      if (!isNaN(dt)) return dt;
+    }
+    // Fallback: que lo intente el ctor de Date (maneja ISO con/ sin zona)
+    const dt = new Date(input);
+    if (!isNaN(dt)) return dt;
+  }
+  return null;
+}
 
 class Evento {
-  // CREATE
   static async create(data) {
-    let connection;
-    try {
-      const seqId = await getNextSeqValue('seq_eventos');
-      data.id = seqId;
+    const jsDate = toJsLocalDate(data.fecha);
+    if (!jsDate) throw new Error('Fecha inválida. Usa formato YYYY-MM-DDTHH:mm');
 
-      connection = await getConnection();
-      await connection.execute(
-        `INSERT INTO Eventos (id, titulo, descripcion, fecha, ubicacion) 
-         VALUES (:id, :titulo, :descripcion, TO_DATE(:fecha, 'YYYY-MM-DD'), :ubicacion)`,
-        {
-          id: data.id,
-          titulo: data.titulo,
-          descripcion: data.descripcion,
-          fecha: data.fecha,
-          ubicacion: data.ubicacion
-        },
-        { autoCommit: true }
-      );
-      return { ...data };
-    } catch (err) {
-      throw err;
-    } finally {
-      await closeConnection(connection);
-    }
+    const r = await callProcedure(
+      `BEGIN eventos_pkg.ins(:nombre,:descripcion,:fecha,:ubicacion,:responsable,:tipo,:estado,:p_id); END;`,
+      {
+        nombre: data.nombre,
+        descripcion: data.descripcion || null,
+        // 👇 clave: bind tipado como DATE
+        fecha: { val: jsDate, type: oracledb.DATE },
+        ubicacion: data.ubicacion || null,
+        responsable: Number(data.responsable),
+        tipo: data.tipo,
+        estado: data.estado,
+        p_id: { dir: oracledb.BIND_OUT, type: oracledb.NUMBER }
+      }
+    );
+    return { id: r.outBinds.p_id, ...data };
   }
 
-  // READ (all)
-  static async findAll() {
-    let connection;
-    try {
-      connection = await getConnection();
-      const result = await connection.execute(
-        `SELECT * FROM Eventos ORDER BY fecha DESC`,
-        [],
-        { outFormat: oracledb.OBJECT }
-      );
-      return result.rows;
-    } catch (err) {
-      throw err;
-    } finally {
-      await closeConnection(connection);
-    }
-  }
-
-  // READ (by id)
-  static async findById(id) {
-    let connection;
-    try {
-      connection = await getConnection();
-      const result = await connection.execute(
-        `SELECT * FROM Eventos WHERE id = :id`,
-        [id],
-        { outFormat: oracledb.OBJECT }
-      );
-      return result.rows[0];
-    } catch (err) {
-      throw err;
-    } finally {
-      await closeConnection(connection);
-    }
-  }
-
-  // SEARCH (by nombre/título)
-  static async searchByNombre(nombre) {
-    let connection;
-    try {
-      connection = await getConnection();
-      const result = await connection.execute(
-        `SELECT * FROM Eventos 
-         WHERE LOWER(titulo) LIKE '%' || LOWER(:nombre) || '%' 
-         ORDER BY fecha DESC`,
-        { nombre },
-        { outFormat: oracledb.OBJECT }
-      );
-      return result.rows;
-    } catch (err) {
-      throw err;
-    } finally {
-      await closeConnection(connection);
-    }
-  }
-
-  // UPDATE
   static async update(id, data) {
-    let connection;
-    try {
-      connection = await getConnection();
-      const result = await connection.execute(
-        `UPDATE Eventos 
-         SET titulo = :titulo, descripcion = :descripcion, 
-             fecha = TO_DATE(:fecha, 'YYYY-MM-DD'), ubicacion = :ubicacion 
-         WHERE id = :id`,
-        {
-          id,
-          titulo: data.titulo,
-          descripcion: data.descripcion,
-          fecha: data.fecha,
-          ubicacion: data.ubicacion
-        },
-        { autoCommit: true }
-      );
-      return result.rowsAffected > 0 ? { id, ...data } : null;
-    } catch (err) {
-      throw err;
-    } finally {
-      await closeConnection(connection);
-    }
+    const jsDate = toJsLocalDate(data.fecha);
+    if (!jsDate) throw new Error('Fecha inválida. Usa formato YYYY-MM-DDTHH:mm');
+
+    await callProcedure(
+      `BEGIN eventos_pkg.upd(:id,:nombre,:descripcion,:fecha,:ubicacion,:responsable,:tipo,:estado); END;`,
+      {
+        id: Number(id),
+        nombre: data.nombre,
+        descripcion: data.descripcion || null,
+        fecha: { val: jsDate, type: oracledb.DATE },   // 👈 igual aquí
+        ubicacion: data.ubicacion || null,
+        responsable: Number(data.responsable),
+        tipo: data.tipo,
+        estado: data.estado
+      }
+    );
+    return { id, ...data };
   }
 
-  // DELETE
   static async delete(id) {
-    let connection;
-    try {
-      connection = await getConnection();
-      const result = await connection.execute(
-        `DELETE FROM Eventos WHERE id = :id`,
-        [id],
-        { autoCommit: true }
-      );
-      return result.rowsAffected > 0;
-    } catch (err) {
-      throw err;
-    } finally {
-      await closeConnection(connection);
-    }
+    await callProcedure(`BEGIN eventos_pkg.del(:id); END;`, { id: Number(id) });
+    return true;
+  }
+
+  static async findById(id) {
+    const rows = await callFunctionCursor(
+      `BEGIN :rc := eventos_pkg.get_by_id(:p_id); END;`,
+      { p_id: Number(id) }
+    );
+    return rows[0] || null;
+  }
+
+  static async findAll() {
+    return await callFunctionCursor(`BEGIN :rc := eventos_pkg.list_all; END;`);
+  }
+
+  static async countPorEstado(estado) {
+    const r = await callProcedure(
+      `BEGIN :out := eventos_pkg.count_por_estado(:p_estado); END;`,
+      { out: { dir: oracledb.BIND_OUT, type: oracledb.NUMBER }, p_estado: estado },
+      { autoCommit: false }
+    );
+    return r.outBinds.out || 0;
   }
 }
 

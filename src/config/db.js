@@ -1,51 +1,54 @@
 const oracledb = require('oracledb');
 
-// Configuración de la conexión
 const dbConfig = {
   user: 'DejandoHuellaDB',
   password: '12345',
-  connectString: 'localhost:1521/orcl' // Ajusta según tu configuración
+  connectString: 'localhost:1521/orcl'
 };
 
-// Inicializar el cliente Oracle
 oracledb.initOracleClient({ libDir: process.env.ORACLE_CLIENT_PATH });
+oracledb.outFormat = oracledb.OUT_FORMAT_OBJECT;
 
-// Función para conectar
+/** Conexión */
 async function getConnection() {
-  try {
-    const connection = await oracledb.getConnection(dbConfig);
-    return connection;
-  } catch (err) {
-    console.error('Error al conectar a Oracle:', err);
-    throw err;
-  }
+  return oracledb.getConnection(dbConfig);
 }
 
-// Función para cerrar conexión
-async function closeConnection(connection) {
-  try {
-    if (connection) {
-      await connection.close();
-    }
-  } catch (err) {
-    console.error('Error al cerrar conexión:', err);
-  }
+async function closeConnection(conn) {
+  try { if (conn) await conn.close(); } catch (_) {}
 }
 
-// Función para obtener el próximo valor de secuencia
-async function getNextSeqValue(sequenceName) {
-  let connection;
+/** Ejecutar PL/SQL (procedimientos con binds IN/OUT) */
+async function callProcedure(plsql, binds = {}, options = {}) {
+  let conn;
   try {
-    connection = await getConnection();
-    const result = await connection.execute(
-      `SELECT ${sequenceName}.NEXTVAL FROM dual`
+    conn = await getConnection();
+    const result = await conn.execute(plsql, binds, { autoCommit: true, ...options });
+    return result;
+  } finally { await closeConnection(conn); }
+}
+
+/** Ejecutar función que retorna SYS_REFCURSOR: BEGIN :rc := pkg.fn(...); END; */
+async function callFunctionCursor(plsql, binds = {}) {
+  let conn;
+  try {
+    conn = await getConnection();
+    const result = await conn.execute(
+      plsql,
+      { rc: { dir: oracledb.BIND_OUT, type: oracledb.CURSOR }, ...binds },
+      { autoCommit: false }
     );
-    return result.rows[0][0];
-  } catch (err) {
-    throw err;
-  } finally {
-    await closeConnection(connection);
-  }
+
+    const rs = result.outBinds.rc;
+    const rows = [];
+    let chunk;
+    do {
+      chunk = await rs.getRows(100);
+      if (chunk && chunk.length) rows.push(...chunk);
+    } while (chunk && chunk.length);
+    await rs.close();
+    return rows;
+  } finally { await closeConnection(conn); }
 }
 
-module.exports = { getConnection, closeConnection, getNextSeqValue };
+module.exports = { getConnection, closeConnection, callProcedure, callFunctionCursor };

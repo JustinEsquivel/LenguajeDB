@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Detalle de Adopción - Dejando Huella</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="/css/style.css">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+  <div id="siteHeader"></div>
+  <main class="container mt-4">
+    <div class="card shadow-sm">
+      <div class="card-header bg-info text-white">
+        <h4 class="mb-0">Detalle de Adopción</h4>
+      </div>
+      <div class="card-body">
+        <div id="loadingIndicator" class="text-center py-4">
+          <div class="spinner-border text-primary"></div>
+          <p class="mb-0">Cargando información...</p>
+        </div>
+
+        <div id="errorContainer" class="alert alert-danger d-none">
+          <i class="fas fa-exclamation-triangle me-2"></i>
+          <span class="error-message">No fue posible cargar la adopción.</span>
+          <button class="btn btn-sm btn-outline-light ms-2 retry-btn">
+            <i class="fas fa-sync-alt me-1"></i> Reintentar
+          </button>
+        </div>
+
+        <div id="adopcionDetails" class="d-none">
+          <dl class="row mb-0">
+            <dt class="col-sm-3">ID:</dt>
+            <dd class="col-sm-9" id="id">-</dd>
+
+            <dt class="col-sm-3">Fecha:</dt>
+            <dd class="col-sm-9" id="fecha">-</dd>
+
+            <dt class="col-sm-3">Mascota (ID):</dt>
+            <dd class="col-sm-9" id="mascota">-</dd>
+
+            <dt class="col-sm-3">Usuario (ID):</dt>
+            <dd class="col-sm-9" id="usuario">-</dd>
+          </dl>
+
+          <div class="mt-3 d-flex flex-wrap gap-2">
+            <a href="javascript:history.back()" class="btn btn-outline-secondary">
+              <i class="fas fa-arrow-left me-1"></i> Volver
+            </a>
+            <a href="#" id="editLink" class="btn btn-warning">
+              <i class="fas fa-edit me-1"></i> Editar fecha
+            </a>
+            <button id="btnRevertir" class="btn btn-danger">
+              <i class="fas fa-undo me-1"></i> Revertir adopción
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script type="module" src="/js/utils.js"></script>
+  <script type="module" src="/js/ui/header.js"></script>
+  <script type="module" src="/js/adopciones/adopcion-detalle.js"></script>
+</body>
+</html>

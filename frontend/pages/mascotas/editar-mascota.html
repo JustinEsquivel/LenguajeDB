@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Editar Mascota - Dejando Huella</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- Estilos -->
+  <link rel="stylesheet" href="/css/style.css">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+  <!-- Header dinámico por rol -->
+  <div id="siteHeader"></div>
+
+  <main class="container my-4">
+    <div class="card shadow-sm">
+      <div class="card-header bg-warning text-dark">
+        <h2 class="mb-0"><i class="fas fa-edit me-2"></i> Editar Mascota</h2>
+      </div>
+
+      <div class="card-body">
+        <!-- Loader -->
+        <div id="loadingIndicator" class="text-center py-4">
+          <div class="spinner-border text-primary"></div>
+          <p class="mb-0">Cargando...</p>
+        </div>
+
+        <!-- Errores -->
+        <div id="errorSummary" class="alert alert-danger d-none"></div>
+        <div id="successBox" class="alert alert-success d-none"></div>
+
+        <!-- Formulario -->
+        <form id="mascotaForm" class="d-none" novalidate>
+          <input type="hidden" id="mascotaId">
+
+          <div class="row g-3">
+            <div class="col-md-8">
+              <label class="form-label">Nombre</label>
+              <input id="nombre" class="form-control" required>
+
+              <label class="form-label mt-3">Raza</label>
+              <input id="raza" class="form-control" required>
+
+              <div class="row g-3 mt-1">
+                <div class="col-md-6">
+                  <label class="form-label">Edad (años)</label>
+                  <input id="edad" type="number" min="0" class="form-control" required>
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label">Estado</label>
+                  <select id="estado" class="form-select" required>
+                    <option>Disponible</option>
+                    <option>En observación</option>
+                    <option>En tratamiento</option>
+                    <option>Adoptado</option>
+                  </select>
+                </div>
+              </div>
+
+              <label class="form-label mt-3">Descripción</label>
+              <textarea id="descripcion" rows="3" class="form-control" required></textarea>
+
+              <label class="form-label mt-3">URL de foto (opcional)</label>
+              <input id="fotoUrl" type="url" class="form-control" placeholder="https://...">
+            </div>
+
+            <div class="col-md-4">
+              <label class="form-label">Foto actual</label>
+              <div id="currentFoto" class="border rounded p-2 d-flex align-items-center justify-content-center" style="min-height: 200px;">
+                <span class="text-muted">Sin foto</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-4 d-flex gap-2">
+            <button type="submit" class="btn btn-primary">
+              <i class="fas fa-save me-1"></i> Guardar cambios
+            </button>
+            <a id="cancelLink" href="detalle-mascota.html" class="btn btn-outline-secondary">
+              <i class="fas fa-times me-1"></i> Cancelar
+            </a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </main>
+
+  <!-- Scripts -->
+  <script type="module" src="/js/utils.js"></script>
+  <script type="module" src="/js/ui/header.js"></script>
+  <script type="module" src="/js/mascotas/mascota-editar.js"></script>
+
+  <script type="module">
+    import { makeRequest, getAuthData, showError, showSuccess, normalizeRow } from '/js/utils.js';
+
+    const qs = new URLSearchParams(location.search);
+    const id = qs.get('id');
+
+    // Solo admin
+    const user = getAuthData();
+    if (!user || Number(user.rol) !== 1) {
+      // si no es admin, a inicio
+      location.href = '/index.html';
+    }
+
+    const loading = document.getElementById('loadingIndicator');
+    const form    = document.getElementById('mascotaForm');
+    const errBox  = document.getElementById('errorSummary');
+    const okBox   = document.getElementById('successBox');
+
+    const idEl   = document.getElementById('mascotaId');
+    const nomEl  = document.getElementById('nombre');
+    const razaEl = document.getElementById('raza');
+    const edadEl = document.getElementById('edad');
+    const estEl  = document.getElementById('estado');
+    const desEl  = document.getElementById('descripcion');
+    const fotoEl = document.getElementById('fotoUrl');
+    const fotoBox= document.getElementById('currentFoto');
+    const cancel = document.getElementById('cancelLink');
+
+    // ajustar link cancelar
+    if (id && cancel) cancel.href = `detalle-mascota.html?id=${encodeURIComponent(id)}`;
+
+    if (!id) {
+      showError('ID de mascota no proporcionado.', errBox);
+    } else {
+      loadMascota();
+    }
+
+    async function loadMascota() {
+      toggleLoading(true);
+      try {
+        const data = await makeRequest(`/api/mascotas/${encodeURIComponent(id)}`, 'GET');
+        const m = normalizeRow(data || {});
+        idEl.value    = m.id;
+        nomEl.value   = m.nombre || '';
+        razaEl.value  = m.raza || '';
+        edadEl.value  = m.edad ?? '';
+        estEl.value   = m.estado || 'Disponible';
+        desEl.value   = m.descripcion || '';
+        fotoEl.value  = m.foto || '';
+
+        if (m.foto) {
+          fotoBox.innerHTML = `<img src="${m.foto}" alt="Foto" class="img-fluid rounded">`;
+        } else {
+          fotoBox.innerHTML = `<span class="text-muted">Sin foto</span>`;
+        }
+
+        form.classList.remove('d-none');
+      } catch (err) {
+        showError(err.message || 'No fue posible cargar la mascota.', errBox);
+      } finally {
+        toggleLoading(false);
+      }
+    }
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      errBox.classList.add('d-none');
+      okBox.classList.add('d-none');
+
+      // validación simple
+      if (!nomEl.value.trim() || !razaEl.value.trim() || String(edadEl.value).trim()==='') {
+        return showError('Nombre, raza y edad son obligatorios.', errBox);
+      }
+      if (Number(edadEl.value) < 0) {
+        return showError('La edad debe ser un número positivo.', errBox);
+      }
+
+      const payload = {
+        nombre: nomEl.value.trim(),
+        raza:   razaEl.value.trim(),
+        edad:   Number(edadEl.value),
+        descripcion: desEl.value.trim(),
+        foto: fotoEl.value.trim() || null,
+        estado: estEl.value,
+        usuario: user.id 
+      };
+
+      try {
+        await makeRequest(`/api/mascotas/${encodeURIComponent(id)}`, 'PUT', payload);
+        showSuccess('Mascota actualizada correctamente.', okBox);
+        setTimeout(() => location.href = `detalle-mascota.html?id=${encodeURIComponent(id)}`, 800);
+      } catch (err) {
+        showError(err.message || 'No fue posible guardar los cambios.', errBox);
+      }
+    });
+
+    function toggleLoading(on) {
+      loading.classList.toggle('d-none', !on);
+      if (on) form.classList.add('d-none');
+    }
+  </script>
+</body>
+</html>

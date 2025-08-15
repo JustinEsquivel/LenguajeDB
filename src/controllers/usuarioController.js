@@ -1,104 +1,39 @@
 const usuarioService = require('../services/usuarioService');
 
 class UsuarioController {
-  // Get all users
-  async getAllUsers(req, res) {
-    try {
-      const users = await usuarioService.getAllUsers();
-      res.status(200).json(users);
-    } catch (error) {
-      res.status(400).json({ error: error.message });
-    }
+  async getAllUsuarios(req, res) {
+    try { res.status(200).json(await usuarioService.getAllUsuarios()); }
+    catch (e) { res.status(400).json({ error: e.message }); }
   }
 
-  // Get user by id
-  async getUserById(req, res) {
+  async getUsuarioById(req, res) {
     try {
-      const user = await usuarioService.getUserById(req.params.id);
-      if (user) {
-        res.status(200).json(user);
-      } else {
-        res.status(404).json({ error: 'Usuario no encontrado' });
-      }
-    } catch (error) {
-      res.status(400).json({ error: error.message });
-    }
+      const u = await usuarioService.getUsuarioById(req.params.id);
+      if (!u) return res.status(404).json({ error: 'Usuario no encontrado' });
+      res.status(200).json(u);
+    } catch (e) { res.status(400).json({ error: e.message }); }
   }
 
-  // Get user by email
-  async getUserByEmail(req, res) {
-    try {
-      const user = await usuarioService.getUserByEmail(req.params.email);
-      if (user) {
-        res.status(200).json(user);
-      } else {
-        res.status(404).json({ error: 'Usuario no encontrado' });
-      }
-    } catch (error) {
-      res.status(400).json({ error: error.message });
-    }
+  async createUsuario(req, res) {
+    try { res.status(201).json(await usuarioService.createUsuario(req.body)); }
+    catch (e) { res.status(400).json({ error: e.message }); }
   }
 
-  // Search users by name
-  async searchUserByName(req, res) {
-    try {
-      const users = await usuarioService.searchUserByNameOrLast(req.body.search);
-      res.status(200).json(users);
-    } catch (error) {
-      res.status(400).json({ error: error.message });
-    }
+  async updateUsuario(req, res) {
+    try { res.status(200).json(await usuarioService.updateUsuario(req.params.id, req.body)); }
+    catch (e) { res.status(400).json({ error: e.message }); }
   }
 
-  // Create user
-  async createUser(req, res) {
-    try {
-      const user = await usuarioService.createUser(req.body);
-      res.status(201).json(user);
-    } catch (error) {
-      res.status(400).json({ error: error.message });
-    }
+  async deleteUsuario(req, res) {
+    try { await usuarioService.deleteUsuario(req.params.id); res.status(200).json({ message: 'Usuario eliminado' }); }
+    catch (e) { res.status(400).json({ error: e.message }); }
   }
 
-  // Update user
-  async updateUser(req, res) {
+  async countPorRol(req, res) {
     try {
-      const user = await usuarioService.updateUser(req.params.id, req.body);
-      if (user) {
-        res.status(200).json(user);
-      } else {
-        res.status(404).json({ error: 'Usuario no encontrado' });
-      }
-    } catch (error) {
-      res.status(400).json({ error: error.message });
-    }
-  }
-
-  // Delete user
-  async deleteUser(req, res) {
-    try {
-      const success = await usuarioService.deleteUser(req.params.id);
-      if (success) {
-        res.status(200).json({ message: 'Usuario eliminado correctamente' });
-      } else {
-        res.status(404).json({ error: 'Usuario no encontrado' });
-      }
-    } catch (error) {
-      res.status(400).json({ error: error.message });
-    }
-  }
-
-  // Authenticate user
-  async authenticateUser(req, res) {
-    try {
-      const user = await usuarioService.authenticateUser(req.body.email, req.body.password);
-      if (user) {
-        res.status(200).json(user);
-      } else {
-        res.status(401).json({ error: 'Credenciales inválidas' });
-      }
-    } catch (error) {
-      res.status(400).json({ error: error.message });
-    }
+      const total = await usuarioService.countUsuariosPorRol(Number(req.params.rol));
+      res.status(200).json({ rol: Number(req.params.rol), total });
+    } catch (e) { res.status(400).json({ error: e.message }); }
   }
 }
 

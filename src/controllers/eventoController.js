@@ -1,77 +1,61 @@
 const eventoService = require('../services/eventoService');
 
 class EventoController {
-  // Obtener todos los eventos
-  async getAllEventos(req, res) {
-    try {
-      const eventos = await eventoService.getAllEventos();
-      res.status(200).json(eventos);
-    } catch (error) {
-      res.status(400).json({ error: error.message });
-    }
+  async getAll(req, res) {
+    try { res.status(200).json(await eventoService.getAllEventos()); }
+    catch (e) { res.status(400).json({ error: e.message }); }
   }
-
-  // Obtener evento por ID
-  async getEventoById(req, res) {
+  async getById(req, res) {
     try {
-      const evento = await eventoService.getEventoById(req.params.id);
-      if (evento) {
-        res.status(200).json(evento);
-      } else {
-        res.status(404).json({ error: 'Evento no encontrado' });
-      }
-    } catch (error) {
-      res.status(400).json({ error: error.message });
-    }
+      const ev = await eventoService.getEventoById(req.params.id);
+      if (!ev) return res.status(404).json({ error: 'Evento no encontrado' });
+      res.status(200).json(ev);
+    } catch (e) { res.status(400).json({ error: e.message }); }
   }
-
-  // Buscar eventos por nombre
-  async searchEventoByNombre(req, res) {
+  async create(req, res) {
     try {
-      const eventos = await eventoService.searchEventoByNombre(req.body.search);
-      res.status(200).json(eventos);
-    } catch (error) {
-      res.status(400).json({ error: error.message });
-    }
+      if (!req.body?.fecha) return res.status(400).json({ error: 'La fecha es requerida' });
+      const ev = await eventoService.createEvento(req.body);
+      res.status(201).json(ev);
+    } catch (e) { res.status(400).json({ error: e.message }); }
   }
-
-  // Crear un nuevo evento
-  async createEvento(req, res) {
+  async update(req, res) {
     try {
-      const evento = await eventoService.createEvento(req.body);
-      res.status(201).json(evento);
-    } catch (error) {
-      res.status(400).json({ error: error.message });
-    }
+      if (!req.body?.fecha) return res.status(400).json({ error: 'La fecha es requerida' });
+      const ev = await eventoService.updateEvento(req.params.id, req.body);
+      res.status(200).json(ev);
+    } catch (e) { res.status(400).json({ error: e.message }); }
   }
-
-  // Actualizar un evento
-  async updateEvento(req, res) {
-    try {
-      const evento = await eventoService.updateEvento(req.params.id, req.body);
-      if (evento) {
-        res.status(200).json(evento);
-      } else {
-        res.status(404).json({ error: 'Evento no encontrado' });
-      }
-    } catch (error) {
-      res.status(400).json({ error: error.message });
-    }
+  async remove(req, res) {
+    try { await eventoService.deleteEvento(req.params.id); res.status(200).json({ message: 'Evento eliminado' }); }
+    catch (e) { res.status(400).json({ error: e.message }); }
   }
-
-  // Eliminar un evento
-  async deleteEvento(req, res) {
+  async countByState(req, res) {
+    try { res.status(200).json({ estado: req.params.estado, total: await eventoService.countEventosPorEstado(req.params.estado) }); }
+    catch (e) { res.status(400).json({ error: e.message }); }
+  }
+  async getPublic(req, res) {
     try {
-      const success = await eventoService.deleteEvento(req.params.id);
-      if (success) {
-        res.status(200).json({ message: 'Evento eliminado correctamente' });
-      } else {
-        res.status(404).json({ error: 'Evento no encontrado' });
-      }
-    } catch (error) {
-      res.status(400).json({ error: error.message });
+      const { NOMBRE = '' } = req.query;
+      // trae todos y filtra (rápido y simple). Si prefieres, muévelo a SQL luego.
+      const all = await eventoService.getAllEventos();
+      const nombre = String(NOMBRE).toLowerCase().trim();
+
+      const list = (Array.isArray(all) ? all : []).filter(e => {
+        const est = (e.estado || '').toLowerCase();
+        const okEstado = est === 'planificado' || est === 'en curso';
+        const okNombre = !nombre || (String(e.nombre || '').toLowerCase().includes(nombre));
+        return okEstado && okNombre;
+      });
+
+      // Opcional: solo futuros/desde hoy
+      // const today = new Date(); today.setHours(0,0,0,0);
+      // const list = base.filter(e => new Date(e.fecha) >= today);
+
+      res.status(200).json(list);
+    } catch (e) {
+      res.status(400).json({ error: e.message });
     }
   }
 }
-
 module.exports = new EventoController();

@@ -1,189 +1,107 @@
+// src/controllers/mascotaController.js
 const mascotaService = require('../services/mascotaService');
 
-
-
 class MascotaController {
-
-  // Obtener todas las mascotas 
-
+  // GET /api/mascotas
   async getAllMascotas(req, res) {
-
     try {
+      const role = Number(req.headers['x-role'] || req.query.role || 0); // 1=admin
+      const scope = (req.query.scope || '').toLowerCase();              // opcional: ?scope=all
 
-      const mascotas = await mascotaService.getAllMascotas();
-
-      res.status(200).json(mascotas);
-
-    } catch (error) {
-
-      res.status(400).json({ error: error.message });
-
-    }
-
-  }
-
-
-
-  // Obtener mascota por ID 
-
-  async getMascotaById(req, res) {
-
-    try {
-
-      const mascota = await mascotaService.getMascotaById(req.params.id);
-
-      if (mascota) {
-
-        res.status(200).json(mascota);
-
+      let mascotas;
+      if (role === 1 || scope === 'all') {
+        mascotas = await mascotaService.getAllMascotas();               // 🔥 todas
       } else {
-
-        res.status(404).json({ error: 'Mascota no encontrada' });
-
+        mascotas = await mascotaService.getMascotasDisponibles();       // solo disponibles
       }
-
+      return res.status(200).json(mascotas);
     } catch (error) {
-
-      res.status(400).json({ error: error.message });
-
+      console.error(error);
+      return res.status(400).json({ error: error.message });
     }
-
   }
 
-
-
-  // Buscar mascotas por nombre 
-
-  async searchMascotaByName(req, res) {
-
+  // GET /api/mascotas/:id
+  async getMascotaById(req, res) {
     try {
-
-      const mascotas = await mascotaService.searchMascotaByName(req.body.search);
-
-      res.status(200).json(mascotas);
-
+      const mascota = await mascotaService.getMascotaById(req.params.id);
+      if (!mascota) return res.status(404).json({ error: 'Mascota no encontrada' });
+      return res.status(200).json(mascota);
     } catch (error) {
-
-      res.status(400).json({ error: error.message });
-
+      return res.status(400).json({ error: error.message });
     }
-
   }
 
+  // POST /api/mascotas-search  {search}
+  async searchMascotaByName(req, res) {
+    try {
+      const role = Number(req.headers['x-role'] || req.query.role || 0);
+      const term = req.body?.search || '';
 
-
-  // Crear nueva mascota 
+      // Si es admin, busca en TODAS; si no, en disponibles
+      if (role === 1) {
+        const mascotas = await mascotaService.searchMascotaByName(term); // usa list_all_by_name
+        return res.status(200).json(mascotas);
+      } else {
+        // filtra disponibles por nombre
+        const disponibles = await mascotaService.getMascotasDisponibles('');
+        const q = term.toLowerCase();
+        const filtradas = disponibles.filter(m => (m.NOMBRE || m.nombre || '').toLowerCase().includes(q));
+        return res.status(200).json(filtradas);
+      }
+    } catch (error) {
+      return res.status(400).json({ error: error.message });
+    }
+  }
 
   async createMascota(req, res) {
-
     try {
-
       const mascota = await mascotaService.createMascota(req.body);
-
-      res.status(201).json(mascota);
-
+      return res.status(201).json(mascota);
     } catch (error) {
-
-      res.status(400).json({ error: error.message });
-
+      return res.status(400).json({ error: error.message });
     }
-
   }
-
-
-
-  // Actualizar mascota 
 
   async updateMascota(req, res) {
-
     try {
-
       const mascota = await mascotaService.updateMascota(req.params.id, req.body);
-
-      if (mascota) {
-
-        res.status(200).json(mascota);
-
-      } else {
-
-        res.status(404).json({ error: 'Mascota no encontrada' });
-
-      }
-
+      if (!mascota) return res.status(404).json({ error: 'Mascota no encontrada' });
+      return res.status(200).json(mascota);
     } catch (error) {
-
-      res.status(400).json({ error: error.message });
-
+      return res.status(400).json({ error: error.message });
     }
-
   }
-
-
-
-  // Eliminar mascota 
 
   async deleteMascota(req, res) {
-
     try {
-
-      const success = await mascotaService.deleteMascota(req.params.id);
-
-      if (success) {
-
-        res.status(200).json({ message: 'Mascota eliminada correctamente' });
-
-      } else {
-
-        res.status(404).json({ error: 'Mascota no encontrada' });
-
-      }
-
+      const ok = await mascotaService.deleteMascota(req.params.id);
+      if (!ok) return res.status(404).json({ error: 'Mascota no encontrada' });
+      return res.status(200).json({ message: 'Mascota eliminada correctamente' });
     } catch (error) {
-
-      res.status(400).json({ error: error.message });
-
+      return res.status(400).json({ error: error.message });
     }
-
   }
-
-
-
-  // Obtener mascotas por usuario 
 
   async getMascotasByUsuario(req, res) {
-
     try {
-
       const mascotas = await mascotaService.getMascotasByUsuario(req.params.usuarioId);
-
-      res.status(200).json(mascotas);
-
+      return res.status(200).json(mascotas);
     } catch (error) {
-
-      res.status(400).json({ error: error.message });
-
+      return res.status(400).json({ error: error.message });
     }
-
   }
 
+  // GET /api/mascotas-disponibles?NOMBRE=...
   async getMascotasDisponibles(req, res) {
-
     try {
-
-      const mascotas = await mascotaService.getMascotasDisponibles();
-
-      res.status(200).json(mascotas);
-
+      const name = req.query.NOMBRE || '';
+      const mascotas = await mascotaService.getMascotasDisponibles(name);
+      return res.status(200).json(mascotas);
     } catch (error) {
-
-      res.status(400).json({ error: error.message });
-
+      return res.status(400).json({ error: error.message });
     }
-
   }
-
 }
 
-
-
-module.exports = new MascotaController(); 
+module.exports = new MascotaController();

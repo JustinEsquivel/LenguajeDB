@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Reportes - Administrador</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- Estilos unificados -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <!-- Header dinámico -->
+  <div id="siteHeader"></div>
+
+  <main class="container my-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h2 class="mb-0"></i> Gestión de Reportes</h2>
+      <a href="/pages/reportes/reportar.html" class="btn btn-primary">
+        <i class="fas fa-plus me-1"></i> Nuevo reporte
+      </a>
+    </div>
+
+    <!-- Buscador -->
+    <form id="searchForm" class="mb-3">
+      <div class="input-group">
+        <input id="searchInput" class="form-control" placeholder="Buscar por texto, zona, id, usuario, mascota..." />
+        <button class="btn btn-outline-primary" type="submit">
+          <i class="fas fa-search me-1"></i> Buscar
+        </button>
+      </div>
+    </form>
+
+    <!-- Loader (opcional si tu JS lo usa) -->
+    <div id="loadingIndicator" class="text-center py-4 d-none">
+      <div class="spinner-border text-primary" role="status" aria-label="Cargando"></div>
+      <p class="mb-0 mt-2">Cargando reportes...</p>
+    </div>
+
+    <!-- Mensaje si no hay resultados -->
+    <div id="noResults" class="alert alert-info d-none">No se encontraron reportes.</div>
+
+    <!-- Tabla -->
+    <div class="table-responsive">
+      <table class="table table-hover align-middle" id="tablaReportes">
+        <thead class="table-light">
+          <tr>
+            <th>ID</th>
+            <th>Fecha</th>
+            <th>Usuario</th>
+            <th>Mascota</th>
+            <th>Provincia</th>
+            <th>Cantón</th>
+            <th>Distrito</th>
+            <th>Detalles</th>
+            <th class="text-nowrap" style="min-width: 180px;">Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="reportesTableBody"></tbody>
+      </table>
+    </div>
+  </main>
+
+  <!-- Scripts (sin tocar la lógica) -->
+  <script type="module" src="/js/utils.js"></script>
+  <script type="module" src="/js/ui/header.js"></script>
+  <script type="module" src="/js/reportes/reportes-admin.js"></script>
+</body>
+</html>

@@ -1,96 +1,95 @@
+// src/services/authService.js
 const bcrypt = require('bcrypt');
 const Usuario = require('../models/usuario');
 
+const SALT_ROUNDS = 10;
+
 class AuthService {
-    // Registrar usuario
-    async registerUser(userData) {
-        try {
-            // Verificar si el usuario ya existe
-            const existingUser = await Usuario.findByEmail(userData.email);
-            if (existingUser) {
-                return { success: false, message: 'El email ya está registrado' };
-            }
+  // Registrar usuario con hash
+  async registerUser(userData) {
+    try {
+      const existingUser = await Usuario.findByEmail(userData.email);
+      if (existingUser) {
+        return { success: false, message: 'El email ya está registrado' };
+      }
 
-            // Hash de la contraseña
-            const hashedPassword = await bcrypt.hash(userData.password, 10);
-            userData.password = hashedPassword;
+      const hashedPassword = await bcrypt.hash(userData.password, SALT_ROUNDS);
+      userData.password = hashedPassword;
 
-            // Crear usuario
-            const newUser = await Usuario.create(userData);
+      const newUser = await Usuario.create(userData);
+      if (!newUser) return { success: false, message: 'Error al crear el usuario' };
 
-            if (newUser) {
-                return { success: true, user: newUser };
-            } else {
-                return { success: false, message: 'Error al crear el usuario' };
-            }
-        } catch (error) {
-            console.error('Error en registerUser:', error);
-            throw error;
-        }
+      // Nunca regresamos el hash
+      const { password, PASSWORD, ...safe } = newUser;
+      return { success: true, user: safe };
+    } catch (error) {
+      console.error('Error en registerUser:', error);
+      throw error;
     }
+  }
 
-    // Autenticar usuario
-    async authenticateUser(email, password) {
-        try {
-            const user = await Usuario.findByEmail(email);
-            if (!user) return null;
+  // Autenticar usuario
+  async authenticateUser(email, password) {
+    try {
+      const user = await Usuario.findByEmail(email);
+      if (!user) return null;
 
-            const passwordMatch = await bcrypt.compare(password, user.password);
-            if (!passwordMatch) return null;
+      // Oracle puede traer MAYÚSCULAS
+      const dbHash = user.PASSWORD ?? user.password ?? null;
 
-            // Retornar solo los campos necesarios
-            return {
-                id: user.id,
-                email: user.email,
-                nombre: user.nombre,
-                apellido: user.apellido,
-                rol: user.rol
-            };
-        } catch (error) {
-            console.error('Error en authenticateUser:', error);
-            throw error;
-        }
+      if (!dbHash) {
+        // el usuario no tiene password almacenado
+        return null;
+      }
+
+      let ok = false;
+      if (typeof dbHash === 'string' && dbHash.startsWith('$2')) {
+        // Bcrypt
+        ok = await bcrypt.compare(password, dbHash);
+      } else {
+        // Datos viejos en texto plano
+        ok = String(password) === String(dbHash);
+      }
+
+      if (!ok) return null;
+
+      // Armar objeto seguro (sin password)
+      const safeUser = {
+        id:       user.ID ?? user.id,
+        email:    user.EMAIL ?? user.email,
+        nombre:   user.NOMBRE ?? user.nombre,
+        apellido: user.APELLIDO ?? user.apellido,
+        rol:      user.ROL ?? user.rol
+      };
+      return safeUser;
+    } catch (error) {
+      console.error('Error en authenticateUser:', error);
+      throw error;
     }
+  }
 
-    // Crear sesión de usuario
-    createUserSession(req, user) {
-        req.session.regenerate((err) => {
-            if (err) {
-                console.error('Error al regenerar sesión:', err);
-                throw err;
-            }
+  // (opcional) sesiones con express-session
+  createUserSession(req, user) {
+    req.session.regenerate((err) => {
+      if (err) { console.error('Error al regenerar sesión:', err); throw err; }
+      req.session.user = {
+        id: user.id, email: user.email, nombre: user.nombre, apellido: user.apellido, rol: user.rol
+      };
+      req.session.save((err) => {
+        if (err) { console.error('Error al guardar sesión:', err); throw err; }
+      });
+    });
+  }
 
-            req.session.user = {
-                id: user.id,
-                email: user.email,
-                nombre: user.nombre,
-                apellido: user.apellido,
-                rol: user.rol
-            };
+  destroyUserSession(req) {
+    req.session.destroy((err) => {
+      if (err) { console.error('Error al destruir sesión:', err); throw err; }
+    });
+  }
 
-            req.session.save((err) => {
-                if (err) {
-                    console.error('Error al guardar sesión:', err);
-                    throw err;
-                }
-            });
-        });
-    }
-
-    // Destruir sesión
-    destroyUserSession(req) {
-        req.session.destroy((err) => {
-            if (err) {
-                console.error('Error al destruir sesión:', err);
-                throw err;
-            }
-        });
-    }
-
-    // Obtener usuario actual
-    getCurrentUser(req) {
-        return req.session.user || null;
-    }
+  getCurrentUser(req) {
+    return req.session.user || null;
+  }
 }
 
 module.exports = new AuthService();

@@ -1,373 +1,98 @@
-const oracledb = require('oracledb'); 
-
-const { getConnection, closeConnection, getNextSeqValue } = require('../config/db'); 
-
-  
-
-class Mascota { 
-
-  // CREATE 
-
-  static async create(data) { 
-
-    let connection; 
-
-    try { 
-
-      const seqId = await getNextSeqValue('seq_mascotas'); 
-
-      data.id = seqId; 
-
-  
-
-      connection = await getConnection(); 
-
-      await connection.execute( 
-
-        `INSERT INTO Mascotas (id, nombre, raza, edad, descripcion, foto, estado, usuario)  
-
-         VALUES (:id, :nombre, :raza, :edad, :descripcion, :foto, :estado, :usuario)`, 
-
-        { 
-
-          id: data.id, 
-
-          nombre: data.nombre, 
-
-          raza: data.raza, 
-
-          edad: data.edad, 
-
-          descripcion: data.descripcion, 
-
-          foto: data.foto, 
-
-          estado: data.estado || 'Disponible', 
-
-          usuario: data.usuario 
-
-        }, 
-
-        { autoCommit: true } 
-
-      ); 
-
-      return { ...data }; 
-
-    } catch (err) { 
-
-      throw err; 
-
-    } finally { 
-
-      await closeConnection(connection); 
-
-    } 
-
-  } 
-
-  
-
-  // READ (all) 
-
-  static async findAll() { 
-
-    let connection; 
-
-    try { 
-
-      connection = await getConnection(); 
-
-      const result = await connection.execute( 
-
-        `SELECT m.*, u.nombre as usuario_nombre  
-
-         FROM Mascotas m  
-
-         JOIN Usuarios u ON m.usuario = u.id`, 
-
-        [], 
-
-        { outFormat: oracledb.OBJECT } 
-
-      ); 
-
-      return result.rows; 
-
-    } catch (err) { 
-
-      throw err; 
-
-    } finally { 
-
-      await closeConnection(connection); 
-
-    } 
-
-  } 
-
-  
-
-  // READ (by id) 
-
-  static async findById(id) { 
-
-    let connection; 
-
-    try { 
-
-      connection = await getConnection(); 
-
-      const result = await connection.execute( 
-
-        `SELECT m.*, u.nombre as usuario_nombre  
-
-         FROM Mascotas m  
-
-         JOIN Usuarios u ON m.usuario = u.id  
-
-         WHERE m.id = :id`, 
-
-        [id], 
-
-        { outFormat: oracledb.OBJECT } 
-
-      ); 
-
-      return result.rows[0]; 
-
-    } catch (err) { 
-
-      throw err; 
-
-    } finally { 
-
-      await closeConnection(connection); 
-
-    } 
-
-  } 
-
-  
-
-  // SEARCH (by name) 
-
-  static async searchByName(name) { 
-
-    let connection; 
-
-    try { 
-
-      connection = await getConnection(); 
-
-      const result = await connection.execute( 
-
-        `SELECT m.*, u.nombre as usuario_nombre  
-
-         FROM Mascotas m  
-
-         JOIN Usuarios u ON m.usuario = u.id  
-
-         WHERE LOWER(m.nombre) LIKE '%' || LOWER(:name) || '%'`, 
-
-        { name }, 
-
-        { outFormat: oracledb.OBJECT } 
-
-      ); 
-
-      return result.rows; 
-
-    } catch (err) { 
-
-      throw err; 
-
-    } finally { 
-
-      await closeConnection(connection); 
-
-    } 
-
-  } 
-
-  
-
-  // UPDATE 
-
-  static async update(id, data) { 
-
-    let connection; 
-
-    try { 
-
-      connection = await getConnection(); 
-
-      const result = await connection.execute( 
-
-        `UPDATE Mascotas  
-
-         SET nombre = :nombre, raza = :raza, edad = :edad,  
-
-             descripcion = :descripcion, foto = :foto, estado = :estado,  
-
-             usuario = :usuario 
-
-         WHERE id = :id`, 
-
-        { 
-
-          id, 
-
-          nombre: data.nombre, 
-
-          raza: data.raza, 
-
-          edad: data.edad, 
-
-          descripcion: data.descripcion, 
-
-          foto: data.foto, 
-
-          estado: data.estado, 
-
-          usuario: data.usuario 
-
-        }, 
-
-        { autoCommit: true } 
-
-      ); 
-
-      return result.rowsAffected > 0 ? { id, ...data } : null; 
-
-    } catch (err) { 
-
-      throw err; 
-
-    } finally { 
-
-      await closeConnection(connection); 
-
-    } 
-
-  } 
-
-  
-
-  // DELETE 
-
-  static async delete(id) { 
-
-    let connection; 
-
-    try { 
-
-      connection = await getConnection(); 
-
-      const result = await connection.execute( 
-
-        `DELETE FROM Mascotas WHERE id = :id`, 
-
-        [id], 
-
-        { autoCommit: true } 
-
-      ); 
-
-      return result.rowsAffected > 0; 
-
-    } catch (err) { 
-
-      throw err; 
-
-    } finally { 
-
-      await closeConnection(connection); 
-
-    } 
-
-  } 
-
-  
-
-  // GET mascotas by usuario 
-
-  static async findByUsuario(usuarioId) { 
-
-    let connection; 
-
-    try { 
-
-      connection = await getConnection(); 
-
-      const result = await connection.execute( 
-
-        `SELECT m.*  
-
-         FROM Mascotas m  
-
-         WHERE m.usuario = :usuarioId`, 
-
-        [usuarioId], 
-
-        { outFormat: oracledb.OBJECT } 
-
-      ); 
-
-      return result.rows; 
-
-    } catch (err) { 
-
-      throw err; 
-
-    } finally { 
-
-      await closeConnection(connection); 
-
-    } 
-
+const oracledb = require('oracledb');
+const { callProcedure, callFunctionCursor } = require('../config/db');
+
+class Mascota {
+  /** CREATE -> mascotas_pkg.ins */
+  static async create(data) {
+    const plsql = `
+      BEGIN
+        mascotas_pkg.ins(
+          :nombre, :raza, :edad, :descripcion, :foto, :estado, :usuario, :p_id
+        );
+      END;`;
+    const binds = {
+      nombre: data.nombre,
+      raza: data.raza,
+      edad: data.edad,
+      descripcion: data.descripcion,
+      foto: data.foto || null,
+      estado: data.estado || 'Disponible',
+      usuario: data.usuario,
+      p_id: { dir: oracledb.BIND_OUT, type: oracledb.NUMBER }
+    };
+    const result = await callProcedure(plsql, binds);
+    return { id: result.outBinds.p_id, ...data, estado: data.estado || 'Disponible' };
   }
 
-static async findDisponibles() { 
+  /** READ (all disponibles) -> mascotas_pkg.list_disponibles (SYS_REFCURSOR) */
+  static async findDisponibles(name = '') {
+    const rows = await callFunctionCursor(`BEGIN :rc := mascotas_pkg.list_disponibles; END;`);
+    if (!name) return rows;
+    // filtro opcional por nombre (si quieres que la BD filtre, puedo añadírtelo como nueva función en el paquete)
+    const q = name.trim().toLowerCase();
+    return rows.filter(r => (r.NOMBRE || r.nombre || '').toLowerCase().includes(q));
+  }
 
-    let connection; 
+  /** READ (by id) -> mascotas_pkg.get_by_id (SYS_REFCURSOR) */
+  static async findById(id) {
+    const rows = await callFunctionCursor(
+      `BEGIN :rc := mascotas_pkg.get_by_id(:p_id); END;`,
+      { p_id: id }
+    );
+    return rows[0] || null;
+  }
 
-    try { 
+  /** SEARCH (by name) – reutilizamos list_disponibles y filtramos en memoria */
+  static async searchByName(name) {
+    const rows = await callFunctionCursor(`BEGIN :rc := mascotas_pkg.list_disponibles; END;`);
+    const q = (name || '').toLowerCase();
+    return rows.filter(r => (r.NOMBRE || r.nombre || '').toLowerCase().includes(q));
+  }
 
-      connection = await getConnection(); 
+  /** UPDATE -> mascotas_pkg.upd */
+  static async update(id, data) {
+    const plsql = `
+      BEGIN
+        mascotas_pkg.upd(
+          :id, :nombre, :raza, :edad, :descripcion, :foto, :estado, :usuario
+        );
+      END;`;
+    const binds = {
+      id,
+      nombre: data.nombre,
+      raza: data.raza,
+      edad: data.edad,
+      descripcion: data.descripcion,
+      foto: data.foto || null,
+      estado: data.estado,
+      usuario: data.usuario
+    };
+    await callProcedure(plsql, binds);
+    return { id, ...data };
+  }
 
-      const result = await connection.execute( 
+  /** DELETE -> mascotas_pkg.del (maneja borrado de HISTORIALMEDICO y valida ADOPCIONES) */
+  static async delete(id) {
+    await callProcedure(`BEGIN mascotas_pkg.del(:id); END;`, { id });
+    return true;
+  }
 
-        `SELECT m.*, u.nombre as usuario_nombre  
+  /** READ by usuario – si lo quieres por paquete, puedo agregar función; por ahora usamos disponibles y filtramos */
+  static async findByUsuario(usuarioId) {
+    const rows = await callFunctionCursor(`BEGIN :rc := mascotas_pkg.list_disponibles; END;`);
+    return rows.filter(r => String(r.USUARIO || r.usuario) === String(usuarioId));
+  }
 
-         FROM Mascotas m  
+  static async findAll() {
+    return await callFunctionCursor(`BEGIN :rc := mascotas_pkg.list_all; END;`);
+  }
+  static async searchByName(name) {
+    return await callFunctionCursor(
+      `BEGIN :rc := mascotas_pkg.list_all_by_name(:p_name); END;`,
+      { p_name: name || '' }
+    );
+  }
 
-         JOIN Usuarios u ON m.usuario = u.id  
+}
 
-         WHERE m.estado = 'Disponible'`, 
-
-        [], 
-
-        { outFormat: oracledb.OBJECT } 
-
-      ); 
-
-      return result.rows; 
-
-    } catch (err) { 
-
-      throw err; 
-
-    } finally { 
-
-      await closeConnection(connection); 
-
-    } 
-
-  }  
-
-} 
-
-  
-
-module.exports = Mascota; 
+module.exports = Mascota;

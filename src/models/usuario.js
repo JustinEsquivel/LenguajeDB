@@ -1,185 +1,84 @@
+// backend/models/usuario.js
 const oracledb = require('oracledb');
-const { getConnection, closeConnection, getNextSeqValue } = require('../config/db');
+const { callProcedure, callFunctionCursor } = require('../config/db');
+
+// Normaliza claves devueltas por Oracle a minúsculas
+function normalizeRow(row = {}) {
+  const out = {};
+  for (const k of Object.keys(row)) out[k.toLowerCase()] = row[k];
+  return out;
+}
 
 class Usuario {
-  // CREATE
+  // CREATE -> usuarios_pkg.ins
   static async create(data) {
-    let connection;
-    try {
-      const seqId = await getNextSeqValue('seq_usuarios');
-      data.id = seqId;
-
-      connection = await getConnection();
-      await connection.execute(
-        `INSERT INTO Usuarios (id, nombre, apellido, email, password, telefono, rol) 
-         VALUES (:id, :nombre, :apellido, :email, :password, :telefono, :rol)`,
-        {
-          id: data.id,
-          nombre: data.nombre,
-          apellido: data.apellido,
-          email: data.email,
-          password: data.password,
-          telefono: data.telefono,
-          rol: data.rol
-        },
-        { autoCommit: true }
-      );
-      return { ...data };
-    } catch (err) {
-      throw err;
-    } finally {
-      await closeConnection(connection);
-    }
+    const plsql = `BEGIN usuarios_pkg.ins(:nombre,:apellido,:email,:password,:telefono,:rol,:p_id); END;`;
+    const binds = {
+      nombre:   data.nombre,
+      apellido: data.apellido,
+      email:    data.email,
+      password: data.password,
+      telefono: data.telefono,
+      rol:      Number(data.rol), // asegura numérico para evitar CHECK constraint
+      p_id:     { dir: oracledb.BIND_OUT, type: oracledb.NUMBER }
+    };
+    const r = await callProcedure(plsql, binds);
+    return { id: r.outBinds.p_id, ...data, rol: Number(data.rol) };
   }
 
-  // READ (all)
-  static async findAll() {
-    let connection;
-    try {
-      connection = await getConnection();
-      const result = await connection.execute(
-        `SELECT u.*, r.nombre as rol_nombre 
-         FROM Usuarios u 
-         JOIN Roles r ON u.rol = r.id`,
-        [],
-        { outFormat: oracledb.OBJECT }
-      );
-      return result.rows;
-    } catch (err) {
-      throw err;
-    } finally {
-      await closeConnection(connection);
-    }
-  }
-
-  // READ (by id)
-  static async findById(id) {
-    let connection;
-    try {
-      connection = await getConnection();
-      const result = await connection.execute(
-        `SELECT u.*, r.nombre as rol_nombre 
-         FROM Usuarios u 
-         JOIN Roles r ON u.rol = r.id 
-         WHERE u.id = :id`,
-        [id],
-        { outFormat: oracledb.OBJECT }
-      );
-      return result.rows[0];
-    } catch (err) {
-      throw err;
-    } finally {
-      await closeConnection(connection);
-    }
-  }
-
-  // READ (by email)
-  static async findByEmail(email) {
-    let connection;
-    try {
-      connection = await getConnection();
-      const result = await connection.execute(
-        `SELECT u.id, u.nombre, u.apellido, u.email, u.password, u.rol 
-         FROM Usuarios u 
-         WHERE u.email = :email`,
-        [email],
-        { outFormat: oracledb.OBJECT }
-      );
-      return result.rows[0];
-    } catch (err) {
-      throw err;
-    } finally {
-      await closeConnection(connection);
-    }
-  }
-
-  // SEARCH (by name or last name)
-  static async searchByNameOrLast(name) {
-    let connection;
-    try {
-      connection = await getConnection();
-      const result = await connection.execute(
-        `SELECT u.*, r.nombre as rol_nombre 
-         FROM Usuarios u 
-         JOIN Roles r ON u.rol = r.id 
-         WHERE LOWER(u.nombre) LIKE '%' || LOWER(:name) || '%' 
-            OR LOWER(u.apellido) LIKE '%' || LOWER(:name) || '%'`,
-        { name },
-        { outFormat: oracledb.OBJECT }
-      );
-      return result.rows;
-    } catch (err) {
-      throw err;
-    } finally {
-      await closeConnection(connection);
-    }
-  }
-
-  // UPDATE
+  // UPDATE -> usuarios_pkg.upd
   static async update(id, data) {
-    let connection;
-    try {
-      connection = await getConnection();
-      const result = await connection.execute(
-        `UPDATE Usuarios 
-         SET nombre = :nombre, apellido = :apellido, email = :email, 
-             password = :password, telefono = :telefono, rol = :rol 
-         WHERE id = :id`,
-        {
-          id,
-          nombre: data.nombre,
-          apellido: data.apellido,
-          email: data.email,
-          password: data.password,
-          telefono: data.telefono,
-          rol: data.rol
-        },
-        { autoCommit: true }
-      );
-      return result.rowsAffected > 0 ? { id, ...data } : null;
-    } catch (err) {
-      throw err;
-    } finally {
-      await closeConnection(connection);
-    }
+    const plsql = `BEGIN usuarios_pkg.upd(:id,:nombre,:apellido,:email,:password,:telefono,:rol); END;`;
+    const binds = {
+      id:       Number(id),
+      nombre:   data.nombre,
+      apellido: data.apellido,
+      email:    data.email,
+      password: data.password,
+      telefono: data.telefono,
+      rol:      Number(data.rol)
+    };
+    await callProcedure(plsql, binds);
+    return { id: Number(id), ...data, rol: Number(data.rol) };
   }
 
-  // DELETE
+  static async findByEmail(email) {
+    const rows = await callFunctionCursor(
+      `BEGIN :rc := usuarios_pkg.get_by_email(:p_email); END;`,
+      { p_email: email }
+    );
+    return rows[0] ? normalizeRow(rows[0]) : null;
+  }
+
+  // DELETE -> usuarios_pkg.del
   static async delete(id) {
-    let connection;
-    try {
-      connection = await getConnection();
-      const result = await connection.execute(
-        `DELETE FROM Usuarios WHERE id = :id`,
-        [id],
-        { autoCommit: true }
-      );
-      return result.rowsAffected > 0;
-    } catch (err) {
-      throw err;
-    } finally {
-      await closeConnection(connection);
-    }
+    await callProcedure(`BEGIN usuarios_pkg.del(:id); END;`, { id: Number(id) });
+    return true;
   }
 
-  // AUTHENTICATE (manual auth, not used in API login)
-  static async authenticate(email, password) {
-    let connection;
-    try {
-      connection = await getConnection();
-      const result = await connection.execute(
-        `SELECT u.id, u.nombre, u.apellido, u.email, u.password, u.rol 
-         FROM Usuarios u 
-         WHERE u.email = :email AND u.password = :password`,
-        { email, password },
-        { outFormat: oracledb.OBJECT }
-      );
-      return result.rows[0];
-    } catch (err) {
-      throw err;
-    } finally {
-      await closeConnection(connection);
-    }
+  // READ (by id) -> usuarios_pkg.get_by_id
+  static async findById(id) {
+    const rows = await callFunctionCursor(
+      `BEGIN :rc := usuarios_pkg.get_by_id(:p_id); END;`,
+      { p_id: Number(id) }
+    );
+    return rows[0] ? normalizeRow(rows[0]) : null;
+  }
+
+  // READ (all) -> usuarios_pkg.list_all
+  static async findAll() {
+    const rows = await callFunctionCursor(`BEGIN :rc := usuarios_pkg.list_all; END;`);
+    return rows.map(normalizeRow);
+  }
+
+  // Métrica → usuarios_pkg.count_por_rol
+  static async countByRol(rol) {
+    const binds = {
+      out:  { dir: oracledb.BIND_OUT, type: oracledb.NUMBER },
+      p_rol: Number(rol)
+    };
+    const r = await callProcedure(`BEGIN :out := usuarios_pkg.count_por_rol(:p_rol); END;`, binds, { autoCommit: false });
+    return r.outBinds.out || 0;
   }
 }
 

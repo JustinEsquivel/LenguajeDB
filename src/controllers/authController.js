@@ -1,105 +1,68 @@
-const authService = require('../services/authService');
+// src/controllers/authController.js
 const { validationResult } = require('express-validator');
+const authService = require('../services/authService');
 
 class AuthController {
-    // Mostrar formulario de registro
-    showRegistrationForm(req, res) {
-        res.render('auth/register', {
-            successMessage: req.flash('success'),
-            errorMessage: req.flash('error'),
-            formData: req.flash('formData')[0] || {}
-        });
+  // POST /auth/login
+  async login(req, res) {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({ error: 'Datos inválidos', details: errors.array() });
+      }
+
+      const { email, password } = req.body || {};
+      if (!email || !password) {
+        return res.status(400).json({ error: 'Email y password requeridos' });
+      }
+
+      const user = await authService.authenticateUser(email, password);
+      if (!user) {
+        return res.status(401).json({ error: 'Credenciales inválidas' });
+      }
+
+      // Si luego agregas JWT, devuélvelo aquí
+      return res.status(200).json({ user });
+    } catch (error) {
+      console.error('Error en login:', error);
+      return res.status(500).json({ error: error.message || 'Error en el servidor' });
     }
+  }
 
-    // Procesar registro
-    async register(req, res) {
-        const errors = validationResult(req);
+  // POST /api/usuarios  (registro)
+  async register(req, res) {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({ error: 'Datos inválidos', details: errors.array() });
+      }
 
-        if (!errors.isEmpty()) {
-            req.flash('error', errors.array());
-            req.flash('formData', req.body);
-            return res.redirect('/auth/register');
-        }
+      const { nombre, apellido, email, password, telefono, rol } = req.body || {};
+      if (!nombre || !apellido || !email || !password) {
+        return res.status(400).json({ error: 'Campos obligatorios faltantes' });
+      }
 
-        try {
-            const result = await authService.registerUser(req.body);
+      const result = await authService.registerUser({ nombre, apellido, email, password, telefono, rol });
+      if (!result.success) {
+        return res.status(400).json({ error: result.message || 'Error al crear usuario' });
+      }
 
-            if (result.success) {
-                req.flash('success', 'Registro exitoso. Por favor inicie sesión.');
-                return res.redirect('/auth/login');
-            } else {
-                req.flash('error', result.message || 'Error en el registro');
-                req.flash('formData', req.body);
-                return res.redirect('/auth/register');
-            }
-        } catch (error) {
-            console.error('Error en registro:', error);
-            req.flash('error', 'Error interno del servidor');
-            req.flash('formData', req.body);
-            return res.redirect('/auth/register');
-        }
+      return res.status(201).json(result.user);
+    } catch (error) {
+      console.error('Error en registro:', error);
+      return res.status(500).json({ error: error.message || 'Error en el servidor' });
     }
+  }
 
-    // Mostrar formulario de login
-    showLoginForm(req, res) {
-        res.render('auth/login', {
-            errorMessage: req.flash('error'),
-            email: req.flash('email')[0] || ''
-        });
+  // (opcional) logout con sesiones
+  logout(req, res) {
+    try {
+      authService.destroyUserSession(req);
+      return res.status(204).send();
+    } catch (e) {
+      return res.status(500).json({ error: e.message || 'Error al cerrar sesión' });
     }
-
-    // Procesar login
-    async login(req, res) {
-        const errors = validationResult(req);
-
-        if (!errors.isEmpty()) {
-            req.flash('error', errors.array());
-            req.flash('email', req.body.email);
-            return res.redirect('/auth/login');
-        }
-
-        try {
-            const { email, password } = req.body;
-            const user = await authService.authenticateUser(email, password);
-
-            if (user) {
-                // En aplicaciones con sesiones (como Express con passport), normalmente no se hace esto,
-                // pero si estás usando fetch desde el frontend, responde el user directamente:
-                return res.status(200).json(user);
-            } else {
-                return res.status(401).json({ error: 'Credenciales inválidas' });
-            }
-        } catch (error) {
-            console.error('Error en login:', error);
-            return res.status(500).json({ error: 'Error en el servidor' });
-        }
-    }
-
-    // Cerrar sesión
-    logout(req, res) {
-        authService.destroyUserSession(req);
-        res.redirect('/');
-    }
-
-    // Middleware para verificar autenticación
-    ensureAuthenticated(req, res, next) {
-        if (req.isAuthenticated()) {
-            return next();
-        }
-        req.flash('error', 'Por favor inicie sesión para continuar');
-        res.redirect('/auth/login');
-    }
-
-    // Middleware para verificar roles
-    checkRole(role) {
-        return (req, res, next) => {
-            if (req.user && req.user.rol === role) {
-                return next();
-            }
-            req.flash('error', 'No autorizado');
-            res.redirect('/');
-        };
-    }
+  }
 }
 
 module.exports = new AuthController();

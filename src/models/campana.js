@@ -1,133 +1,111 @@
+// models/campana.js
 const oracledb = require('oracledb');
-const { getConnection, closeConnection, getNextSeqValue } = require('../config/db');
+const { callProcedure, callFunctionCursor } = require('../config/db');
+
+/** Normaliza/convierte un valor tipo fecha recibido del front a Date JS para oracledb */
+function toJsDate(val) {
+  if (!val) return null;
+  if (val instanceof Date) return val;
+  // acepta 'YYYY-MM-DD' o 'YYYY-MM-DDTHH:mm'
+  const s = String(val).trim();
+  const withTime = s.length > 10 ? s : `${s}T00:00:00`;
+  const d = new Date(withTime);
+  if (Number.isNaN(d.getTime())) throw new Error('Fecha inválida');
+  return d;
+}
 
 class Campana {
-  // CREATE
+  // CREATE -> campanas_pkg.ins
   static async create(data) {
-    let connection;
-    try {
-      const seqId = await getNextSeqValue('seq_campanas'); // Asumiendo que tienes esta secuencia
-      data.id = seqId;
-
-      connection = await getConnection();
-      await connection.execute(
-        `INSERT INTO Campanas (id, nombre, descripcion, fecha_inicio, fecha_fin, estado) 
-         VALUES (:id, :nombre, :descripcion, :fecha_inicio, :fecha_fin, :estado)`,
-        {
-          id: data.id,
-          nombre: data.nombre,
-          descripcion: data.descripcion,
-          fecha_inicio: data.fecha_inicio,
-          fecha_fin: data.fecha_fin,
-          estado: data.estado
-        },
-        { autoCommit: true }
+    const plsql = `
+    BEGIN
+      campanas_pkg.ins(
+        :nombre,
+        :descripcion,
+        TO_DATE(:inicio, 'YYYY-MM-DD'),
+        TO_DATE(:fin,     'YYYY-MM-DD'),
+        :objetivo,
+        :estado,
+        :usuario,
+        :p_id
       );
-      return { ...data };
-    } catch (err) {
-      throw err;
-    } finally {
-      await closeConnection(connection);
-    }
+    END;`;
+    const binds = {
+      nombre: data.nombre,
+      descripcion: data.descripcion,
+      inicio: data.fechaInicio,  // 'YYYY-MM-DD'
+      fin: data.fechaFin,     // 'YYYY-MM-DD'
+      objetivo: data.objetivo,
+      estado: data.estado,
+      usuario: data.usuario,
+      p_id: { dir: oracledb.BIND_OUT, type: oracledb.NUMBER }
+    };
+    const r = await callProcedure(plsql, binds);
+    return { id: r.outBinds.p_id, ...data };
   }
 
-  // READ (all)
-  static async findAll() {
-    let connection;
-    try {
-      connection = await getConnection();
-      const result = await connection.execute(
-        `SELECT * FROM Campanas`,
-        [],
-        { outFormat: oracledb.OBJECT }
-      );
-      return result.rows;
-    } catch (err) {
-      throw err;
-    } finally {
-      await closeConnection(connection);
-    }
-  }
-
-  // READ (by id)
-  static async findById(id) {
-    let connection;
-    try {
-      connection = await getConnection();
-      const result = await connection.execute(
-        `SELECT * FROM Campanas WHERE id = :id`,
-        [id],
-        { outFormat: oracledb.OBJECT }
-      );
-      return result.rows[0];
-    } catch (err) {
-      throw err;
-    } finally {
-      await closeConnection(connection);
-    }
-  }
-
-  // SEARCH (by nombre)
-  static async searchByNombre(nombre) {
-    let connection;
-    try {
-      connection = await getConnection();
-      const result = await connection.execute(
-        `SELECT * FROM Campanas WHERE LOWER(nombre) LIKE '%' || LOWER(:nombre) || '%'`,
-        [nombre],
-        { outFormat: oracledb.OBJECT }
-      );
-      return result.rows;
-    } catch (err) {
-      throw err;
-    } finally {
-      await closeConnection(connection);
-    }
-  }
-
-  // UPDATE
+  // UPDATE -> campanas_pkg.upd
   static async update(id, data) {
-    let connection;
-    try {
-      connection = await getConnection();
-      const result = await connection.execute(
-        `UPDATE Campanas 
-         SET nombre = :nombre, descripcion = :descripcion, fecha_inicio = :fecha_inicio, fecha_fin = :fecha_fin, estado = :estado
-         WHERE id = :id`,
-        {
-          id,
-          nombre: data.nombre,
-          descripcion: data.descripcion,
-          fecha_inicio: data.fecha_inicio,
-          fecha_fin: data.fecha_fin,
-          estado: data.estado
-        },
-        { autoCommit: true }
+    const plsql = `
+    BEGIN
+      campanas_pkg.upd(
+        :id,
+        :nombre,
+        :descripcion,
+        TO_DATE(:inicio, 'YYYY-MM-DD'),
+        TO_DATE(:fin,     'YYYY-MM-DD'),
+        :objetivo,
+        :estado,
+        :usuario
       );
-      return result.rowsAffected > 0 ? { id, ...data } : null;
-    } catch (err) {
-      throw err;
-    } finally {
-      await closeConnection(connection);
-    }
+    END;`;
+    const binds = {
+      id,
+      nombre: data.nombre,
+      descripcion: data.descripcion,
+      inicio: data.fechaInicio,  // 'YYYY-MM-DD'
+      fin: data.fechaFin,     // 'YYYY-MM-DD'
+      objetivo: data.objetivo,
+      estado: data.estado,
+      usuario: data.usuario
+    };
+    await callProcedure(plsql, binds);
+    return { id, ...data };
   }
 
-  // DELETE
+  // DELETE -> campanas_pkg.del
   static async delete(id) {
-    let connection;
-    try {
-      connection = await getConnection();
-      const result = await connection.execute(
-        `DELETE FROM Campanas WHERE id = :id`,
-        [id],
-        { autoCommit: true }
-      );
-      return result.rowsAffected > 0;
-    } catch (err) {
-      throw err;
-    } finally {
-      await closeConnection(connection);
-    }
+    await callProcedure(`BEGIN campanas_pkg.del(:id); END;`, { id: Number(id) });
+    return true;
+  }
+
+  // READ (by id) -> campanas_pkg.get_by_id
+  static async findById(id) {
+    const rows = await callFunctionCursor(
+      `BEGIN :rc := campanas_pkg.get_by_id(:p_id); END;`,
+      { p_id: Number(id) }
+    );
+    return rows[0] || null;
+  }
+
+  // READ (activas) -> campanas_pkg.list_activas
+  static async findActivas() {
+    return await callFunctionCursor(`BEGIN :rc := campanas_pkg.list_activas; END;`);
+  }
+
+  // READ (todas) -> campanas_pkg.list_all
+  static async findAll() {
+    return await callFunctionCursor(`BEGIN :rc := campanas_pkg.list_all; END;`);
+  }
+
+  // Métrica -> campanas_pkg.recaudado_total
+  static async totalRecaudado(id) {
+    const r = await callProcedure(
+      `BEGIN :out := campanas_pkg.recaudado_total(:p_id); END;`,
+      { out: { dir: oracledb.BIND_OUT, type: oracledb.NUMBER }, p_id: Number(id) },
+      { autoCommit: false }
+    );
+    return r.outBinds.out || 0;
   }
 }
 

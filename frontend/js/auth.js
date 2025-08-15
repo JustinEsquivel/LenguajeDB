@@ -1,103 +1,146 @@
-// Manejo del formulario de registro
-document.getElementById('registerButton')?.addEventListener('click', async function (e) {
-    e.preventDefault();
+// js/auth.js  (ES Module)
+import {
+  makeRequest,
+  saveAuthData,
+  getAuthData,
+  clearAuthData,
+  normalizeRow,
+  showError,
+  showSuccess
+} from './utils.js';
 
-    const nombre = document.getElementById('nombre').value;
-    const apellido = document.getElementById('apellido').value;
-    const email = document.getElementById('email').value;
-    const password = document.getElementById('password').value;
-    const telefono = document.getElementById('telefono').value;
+// Endpoints (ajústalos si en tu server difieren)
+const REGISTER_ENDPOINT = '/api/usuarios'; // rutas de API
+const LOGIN_ENDPOINT    = '/auth/login';   // rutas de auth
 
-    // Validación básica
-    if (!nombre || !apellido || !email || !password) {
-        document.getElementById('registerError').textContent = 'Todos los campos son requeridos';
-        return;
-    }
+/* ================
+   Registro
+================ */
+const registerBtn = document.getElementById('registerButton');
+if (registerBtn) {
+  registerBtn.addEventListener('click', onRegisterClick);
+}
 
-    try {
-        const response = await fetch('http://localhost:5000/api/users', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                nombre,
-                apellido,
-                email,
-                password,
-                telefono: telefono || null,
-                rol: 2
-            })
-        });
+async function onRegisterClick(e) {
+  e.preventDefault();
+  const errEl = document.getElementById('registerError');
+  const okEl  = document.getElementById('registerSuccess');
+  if (errEl) errEl.textContent = '';
+  if (okEl)  okEl.textContent  = '';
 
-        const data = await response.json();
+  const nombre   = (document.getElementById('nombre')?.value || '').trim();
+  const apellido = (document.getElementById('apellido')?.value || '').trim();
+  const email    = (document.getElementById('email')?.value || '').trim();
+  const password = (document.getElementById('password')?.value || '');
+  const telefono = (document.getElementById('telefono')?.value || '').trim();
 
-        if (response.ok) {
-            document.getElementById('registerSuccess').textContent = '¡Registro exitoso!';
-            document.getElementById('registerError').textContent = '';
+  // Validaciones mínimas
+  if (!nombre || !apellido || !email || !password) {
+    showError('Todos los campos son requeridos', errEl);
+    return;
+  }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    showError('Email no válido', errEl);
+    return;
+  }
+  if (password.length < 6) {
+    showError('La contraseña debe tener al menos 6 caracteres', errEl);
+    return;
+  }
+  if (telefono && !/^\d{8,10}$/.test(telefono)) {
+    showError('El teléfono debe tener 8 a 10 dígitos', errEl);
+    return;
+  }
 
-            document.getElementById('registerForm').reset();
+  // Deshabilita botón mientras envías
+  registerBtn.disabled = true;
+  const prevText = registerBtn.textContent;
+  registerBtn.textContent = 'Registrando...';
 
+  try {
+    await makeRequest(REGISTER_ENDPOINT, 'POST', {
+      nombre,
+      apellido,
+      email,
+      password,
+      telefono: telefono || null,
+      rol: 2 // Usuario
+    });
 
-        } else {
-            document.getElementById('registerError').textContent = data.error || 'Error en el registro';
-        }
-    } catch (error) {
-        document.getElementById('registerError').textContent = 'Error de conexión con el servidor';
-        console.error('Error:', error);
-    }
-});
+    showSuccess('¡Registro exitoso! Redirigiendo a login...', okEl);
+    document.getElementById('registerForm')?.reset();
+    setTimeout(() => (window.location.href = 'login.html'), 1500);
+  } catch (err) {
+    showError(err.message || 'Error en el registro', errEl);
+  } finally {
+    registerBtn.disabled = false;
+    registerBtn.textContent = prevText;
+  }
+}
 
-document.getElementById('loginForm')?.addEventListener('submit', async function (e) {
-    e.preventDefault();
+/* ================
+   Login
+================ */
+const loginForm = document.getElementById('loginForm');
+if (loginForm) {
+  loginForm.addEventListener('submit', onLoginSubmit);
+}
 
-    const formData = {
-        email: document.getElementById('email').value,
-        password: document.getElementById('password').value
+async function onLoginSubmit(e) {
+  e.preventDefault();
+  const errEl = document.getElementById('loginError');
+  if (errEl) errEl.textContent = '';
+
+  const email    = (document.getElementById('email')?.value || '').trim();
+  const password = (document.getElementById('password')?.value || '');
+
+  if (!email || !password) {
+    showError('Ingresa email y contraseña', errEl);
+    return;
+  }
+
+  try {
+    const payload = await makeRequest(LOGIN_ENDPOINT, 'POST', { email, password });
+
+    // backend puede devolver { token, user } o un objeto user plano; normalizamos
+    const norm = normalizeRow(payload);
+    const token = norm.token || norm.jwt || null;
+    const userObj = norm.user ? normalizeRow(norm.user) : norm;
+
+    const user = {
+      id:       userObj.id       ?? userObj.userid     ?? userObj.usuarioid ?? userObj.ID,
+      nombre:   userObj.nombre   ?? userObj.NOMBRE,
+      apellido: userObj.apellido ?? userObj.APELLIDO,
+      email:    userObj.email    ?? userObj.EMAIL,
+      rol:      userObj.rol      ?? userObj.ROL
     };
 
-    try {
-        const response = await fetch('http://localhost:5000/api/users/auth', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(formData)
-        });
+    if (!user.id) throw new Error('Respuesta de login inválida');
 
-        const data = await response.json();
-        console.log('✅ Usuario recibido desde el backend:', data);
-        if (response.ok) {
-            const user = {
-                id: data.ID,
-                nombre: data.NOMBRE,
-                apellido: data.APELLIDO,
-                email: data.EMAIL,
-                rol: data.ROL
-            };
-            localStorage.setItem('user', JSON.stringify(user)); // <-- Aquí va user, no data
-            window.location.href = 'dashboard.html';
-        }
-        else {
-            document.getElementById('loginError').textContent = data.error || 'Credenciales inválidas';
-        }
-    } catch (error) {
-        document.getElementById('loginError').textContent = 'Error de conexión. Intente nuevamente.';
-        console.error('Login error:', error);
-    }
+    saveAuthData(user, token);
+    window.location.href = 'dashboard.html';
+  } catch (err) {
+    showError(err.message || 'Credenciales inválidas', errEl);
+  }
+}
+
+/* ================
+   Logout (opcional, si el botón existe)
+================ */
+document.getElementById('logoutBtn')?.addEventListener('click', (e) => {
+  e.preventDefault();
+  clearAuthData();
+  window.location.href = 'login.html';
 });
 
-// Manejo del logout
-document.getElementById('logoutBtn')?.addEventListener('click', function () {
-    clearAuthData();
-    window.location.href = 'login.html';
-});
-
-// Mostrar información del usuario en el dashboard
-document.addEventListener('DOMContentLoaded', function () {
-    const user = getAuthData();
-    if (user && document.getElementById('welcomeName')) {
-        document.getElementById('welcomeName').textContent = user.nombre;
-        document.getElementById('userName').textContent = `${user.nombre} ${user.apellido}`;
-    }
+/* ================
+   Pinta nombre en dashboard (si existe el nodo)
+================ */
+document.addEventListener('DOMContentLoaded', () => {
+  const user = getAuthData();
+  if (!user) return;
+  const welcome = document.getElementById('welcomeName');
+  const full    = document.getElementById('userName');
+  if (welcome) welcome.textContent = user.nombre || '';
+  if (full)    full.textContent    = `${user.nombre || ''} ${user.apellido || ''}`.trim();
 });
