@@ -8,7 +8,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     loadMascotasRecientes(),
     loadAdopcionesRecientes(),
     loadCampanasKpiYTabla(),
-    loadReportesRecientes()
+    loadReportesRecientes(),
+    loadTotalRecaudado()
   ]);
 });
 
@@ -339,4 +340,35 @@ async function loadReportesRecientes() {
     if (tbody) tbody.innerHTML = `<tr><td colspan="4" class="text-center text-muted">Error al cargar</td></tr>`;
   }
 }
+async function loadTotalRecaudado() {
+  try {
+    let rows = await tryFirst([
+      '/api/campanas', '/campanas',
+      '/api/campanas-activas', '/campanas-activas'
+    ]);
+    const list = Array.isArray(rows) ? rows.map(normalizeRow) : [];
+    const total = list.reduce((acc, c) => acc + safeNum(c.recaudado), 0);
+
+    renderMoney('kpiTotalRecaudado', total, 'es-CR', 'CRC'); // ⬅️ aquí
+  } catch (e) {
+    console.error('Total recaudado:', e);
+    renderMoney('kpiTotalRecaudado', 0, 'es-CR', 'CRC');
+  }
+}
+
+function renderMoney(elId, amount, locale='es-CR', currency='CRC') {
+  const el = document.getElementById(elId);
+  if (!el) return;
+
+  const parts = new Intl.NumberFormat(locale, { style:'currency', currency }).formatToParts(Number(amount||0));
+  const symbol  = parts.find(p => p.type === 'currency')?.value ?? '';
+  const integer = parts.filter(p => p.type === 'integer' || p.type === 'group').map(p => p.value).join('');
+  const fraction= parts.find(p => p.type === 'fraction')?.value; // puede venir vacío según configuración
+
+  el.innerHTML = `
+    <span class="symbol">${symbol}</span>
+    <span class="integer">${integer}</span>
+    ${fraction != null ? `<span class="decimal">,${fraction}</span>` : ''}`;
+}
+
 

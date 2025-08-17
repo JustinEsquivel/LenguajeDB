@@ -64,7 +64,7 @@ function validate(p){
   if (!p.apellido) errs.push('Apellido es requerido');
   if (!p.email) errs.push('Email es requerido');
   if (!EDIT && !p.password) errs.push('Contraseña es requerida');
-  if (![0,1,3].includes(Number(p.rol))) errs.push('Rol inválido');
+  if (![2,1,3].includes(Number(p.rol))) errs.push('Rol inválido');
   if (errs.length) throw new Error(errs.join('. '));
 }
 

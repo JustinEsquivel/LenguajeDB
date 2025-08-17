@@ -281,3 +281,18 @@ header.bg-white,
 .sitename{
   color: var(--brand-green-dark, #0b6b3a) !important;
 }
+.kpi-card .kpi-money{
+  display:flex;
+  align-items:baseline;
+  justify-content:center;
+  gap:.25rem;
+  white-space:nowrap;              
+  font-weight:800;
+  font-variant-numeric:tabular-nums;
+  font-size:clamp(1.25rem, 3.2vw, 2.4rem); 
+  line-height:1;
+}
+.kpi-card .kpi-money .symbol{ font-size:.7em; opacity:.85; margin-right:.1rem; }
+.kpi-card .kpi-money .integer{ font-size:1em; }
+.kpi-card .kpi-money .decimal{ font-size:.6em; opacity:.75; margin-left:.1rem; }
+

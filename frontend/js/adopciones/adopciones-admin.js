@@ -1,4 +1,3 @@
-// /js/adopciones/adopciones-admin.js
 import { makeRequest } from '/js/utils.js';
 
 const val = (o, k) => o?.[k] ?? o?.[k.toUpperCase()] ?? o?.[k.toLowerCase()] ?? '';
@@ -33,14 +32,30 @@ async function loadAdopciones(search = '') {
     const data = await makeRequest(`/api/adopciones`, 'GET');
     let rows = Array.isArray(data) ? data : [];
 
-    // filtro cliente: por id / usuario / mascota (string includes)
+    // 1) Armar set de IDs únicos
+    const mIds = new Set();
+    const uIds = new Set();
+    for (const a of rows) {
+      const mid = String(val(a, 'mascota') || '').trim();
+      const uid = String(val(a, 'usuario') || '').trim();
+      if (mid) mIds.add(mid);
+      if (uid) uIds.add(uid);
+    }
+
+    // 2) Resolver nombres (si la API ya los manda, se usan; si no, se consulta por ID)
+    const [mMap, uMap] = await Promise.all([
+      getMascotaMap([...mIds]),
+      getUsuarioMap([...uIds]),
+    ]);
+
+    // 3) Filtro por ID o por NOMBRE resuelto
     const term = search.toLowerCase();
     if (term) {
       rows = rows.filter(a => {
         const id = String(val(a, 'id'));
-        const usuario = String(val(a, 'usuario'));
-        const mascota = String(val(a, 'mascota'));
-        return id.includes(term) || usuario.includes(term) || mascota.includes(term);
+        const mName = String(val(a, 'mascota_nombre') || mMap.get(String(val(a,'mascota'))) || '').toLowerCase();
+        const uName = String(val(a, 'usuario_nombre') || uMap.get(String(val(a,'usuario'))) || '').toLowerCase();
+        return id.includes(term) || mName.includes(term) || uName.includes(term);
       });
     }
 
@@ -49,18 +64,26 @@ async function loadAdopciones(search = '') {
       return;
     }
 
+    // 4) Render
     for (const a of rows) {
       const id  = val(a, 'id');
-      const fec = val(a, 'fecha'); // puede venir como ISO o fecha oracle serializada por driver
+      const fec = val(a, 'fecha');
       const fechaTxt = fec ? new Date(fec).toLocaleDateString() : '-';
-      const mascota = val(a, 'mascota');
-      const usuario = val(a, 'usuario');
+
+      const mascotaName = val(a, 'mascota_nombre') ||
+                          mMap.get(String(val(a,'mascota'))) ||
+                          String(val(a,'mascota')) || '-';
+
+      const usuarioName = val(a, 'usuario_nombre') ||
+                          uMap.get(String(val(a,'usuario'))) ||
+                          String(val(a,'usuario')) || '-';
+
       const tr = document.createElement('tr');
       tr.innerHTML = `
         <td>${escapeHtml(id)}</td>
         <td>${escapeHtml(fechaTxt)}</td>
-        <td>#${escapeHtml(mascota)}</td>
-        <td>#${escapeHtml(usuario)}</td>
+        <td>${escapeHtml(mascotaName)}</td>
+        <td>${escapeHtml(usuarioName)}</td>
         <td>
           <a class="btn btn-sm btn-info me-1" href="/pages/adopciones/detalle-adopcion.html?id=${encodeURIComponent(id)}">
             <i class="fas fa-eye"></i>
@@ -75,7 +98,7 @@ async function loadAdopciones(search = '') {
       tbody.appendChild(tr);
     }
 
-    // eliminar (revertir)
+    // 5) Acciones
     tbody.querySelectorAll('button.btn-danger').forEach(btn => {
       btn.addEventListener('click', async (e) => {
         const id = e.currentTarget.getAttribute('data-id');
@@ -97,6 +120,48 @@ async function loadAdopciones(search = '') {
   } finally {
     loader.classList.add('d-none');
   }
+}
+
+/* ---------- Resolutores de nombre (con pequeño caché) ---------- */
+const mascotaCache = new Map();
+const usuarioCache = new Map();
+
+async function getMascotaMap(ids) {
+  const map = new Map();
+  const arr = ids.filter(Boolean);
+  await Promise.all(arr.map(async (id) => {
+    const key = String(id);
+    if (mascotaCache.has(key)) { map.set(key, mascotaCache.get(key)); return; }
+    try {
+      // Ajusta la ruta si tu API no usa /api
+      const m = await makeRequest(`/api/mascotas/${encodeURIComponent(key)}`, 'GET');
+      const nombre = m?.nombre || key;
+      mascotaCache.set(key, nombre);
+      map.set(key, nombre);
+    } catch {
+      map.set(key, String(id)); // fallback: solo id, sin '#'
+    }
+  }));
+  return map;
+}
+
+async function getUsuarioMap(ids) {
+  const map = new Map();
+  const arr = ids.filter(Boolean);
+  await Promise.all(arr.map(async (id) => {
+    const key = String(id);
+    if (usuarioCache.has(key)) { map.set(key, usuarioCache.get(key)); return; }
+    try {
+      // Ajusta la ruta si tu API no usa /api
+      const u = await makeRequest(`/api/usuarios/${encodeURIComponent(key)}`, 'GET');
+      const nombre = [u?.nombre, u?.apellido].filter(Boolean).join(' ').trim() || u?.email || key;
+      usuarioCache.set(key, nombre);
+      map.set(key, nombre);
+    } catch {
+      map.set(key, String(id)); // fallback: solo id, sin '#'
+    }
+  }));
+  return map;
 }
 
 function escapeHtml(str) {

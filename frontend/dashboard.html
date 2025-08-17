@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
   <meta charset="UTF-8" />
   <title>Dashboard - Dejando Huella</title>
@@ -13,6 +14,7 @@
   <!-- Scripts base del dashboard (sin cambios de lógica) -->
   <script src="/js/dashboard.js" type="module" defer></script>
 </head>
+
 <body>
   <div id="siteHeader"></div>
 
@@ -69,14 +71,6 @@
       <div class="col-md-3 mb-3">
         <div class="card kpi-card h-100">
           <div class="card-body">
-            <div class="display-4 mb-1" id="kpiAdopciones">0</div>
-            <div class="text-muted">Adopciones</div>
-          </div>
-        </div>
-      </div>
-      <div class="col-md-3 mb-3">
-        <div class="card kpi-card h-100">
-          <div class="card-body">
             <div class="display-4 mb-1" id="kpiCampanas">0</div>
             <div class="text-muted">Campañas</div>
           </div>
@@ -87,6 +81,14 @@
           <div class="card-body">
             <div class="display-4 mb-1" id="kpiReportes">0</div>
             <div class="text-muted">Reportes</div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3 mb-3">
+        <div class="card kpi-card h-100">
+          <div class="card-body">
+            <div id="kpiTotalRecaudado" class="kpi-money"></div>
+            <div class="text-muted">Total recaudado</div>
           </div>
         </div>
       </div>
@@ -175,7 +177,7 @@
       <div class="col-12 mb-4">
         <div class="card shadow-sm border-0 h-100">
           <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center">
-            <strong><i class="fas fa-bullhorn"></i> Campañas activas (Top 5 por fin más próximo)</strong>
+            <strong><i class="fas fa-bullhorn"></i> Campañas activas</strong>
             <span class="text-muted small" id="lblCampanasKpi"></span>
           </div>
           <div class="card-body p-0">
@@ -243,10 +245,9 @@
             window.location.href = "/pages/mascotas/mascotas-admin.html";
           });
         }
-        // ✅ Ya NO se crea aquí un botón "Cerrar sesión".
-        //    Ese botón lo gestiona header.js y su listener en mountHeader().
       });
     });
   </script>
 </body>
+
 </html>
