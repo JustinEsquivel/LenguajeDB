@@ -1,4 +1,3 @@
-// controllers/campanaController.js
 const campanaService = require('../services/campanaService');
 
 class CampanaController {

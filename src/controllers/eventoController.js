@@ -37,7 +37,6 @@ class EventoController {
   async getPublic(req, res) {
     try {
       const { NOMBRE = '' } = req.query;
-      // trae todos y filtra (rápido y simple). Si prefieres, muévelo a SQL luego.
       const all = await eventoService.getAllEventos();
       const nombre = String(NOMBRE).toLowerCase().trim();
 
@@ -47,11 +46,6 @@ class EventoController {
         const okNombre = !nombre || (String(e.nombre || '').toLowerCase().includes(nombre));
         return okEstado && okNombre;
       });
-
-      // Opcional: solo futuros/desde hoy
-      // const today = new Date(); today.setHours(0,0,0,0);
-      // const list = base.filter(e => new Date(e.fecha) >= today);
-
       res.status(200).json(list);
     } catch (e) {
       res.status(400).json({ error: e.message });

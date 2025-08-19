@@ -1,24 +1,19 @@
-// models/evento.js
 const oracledb = require('oracledb');
 const { callProcedure, callFunctionCursor } = require('../config/db');
 
-/** Convierte "YYYY-MM-DDTHH:mm" (datetime-local) a Date local, seguro. */
 function toJsLocalDate(input) {
   if (input instanceof Date && !isNaN(input)) return input;
 
   if (typeof input === 'string') {
-    // Acepta "YYYY-MM-DDTHH:mm" y variantes ISO
-    // Si viene solo "YYYY-MM-DD", lo completamos con 00:00
     const s = input.includes('T') ? input : `${input}T00:00`;
     const m = s.match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):?(\d{2})?$/);
     if (m) {
       const [ , Y, M, D, H, I = '00' ] = m;
       const y = parseInt(Y,10), mo = parseInt(M,10)-1, d = parseInt(D,10),
             h = parseInt(H,10), mi = parseInt(I,10);
-      const dt = new Date(y, mo, d, h, mi, 0, 0); // ← local time
+      const dt = new Date(y, mo, d, h, mi, 0, 0);
       if (!isNaN(dt)) return dt;
     }
-    // Fallback: que lo intente el ctor de Date (maneja ISO con/ sin zona)
     const dt = new Date(input);
     if (!isNaN(dt)) return dt;
   }
@@ -35,7 +30,6 @@ class Evento {
       {
         nombre: data.nombre,
         descripcion: data.descripcion || null,
-        // 👇 clave: bind tipado como DATE
         fecha: { val: jsDate, type: oracledb.DATE },
         ubicacion: data.ubicacion || null,
         responsable: Number(data.responsable),
@@ -57,7 +51,7 @@ class Evento {
         id: Number(id),
         nombre: data.nombre,
         descripcion: data.descripcion || null,
-        fecha: { val: jsDate, type: oracledb.DATE },   // 👈 igual aquí
+        fecha: { val: jsDate, type: oracledb.DATE },  
         ubicacion: data.ubicacion || null,
         responsable: Number(data.responsable),
         tipo: data.tipo,

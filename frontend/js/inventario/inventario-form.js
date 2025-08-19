@@ -1,4 +1,3 @@
-// /js/inventario/inventario-form.js
 import { makeRequest, normalizeRow, getAuthData } from '../utils.js';
 
 const $ = (id) => document.getElementById(id);
@@ -7,7 +6,6 @@ const toInputDate = (v) => {
   if (!v) return '';
   const d = new Date(v);
   if (!Number.isNaN(d.getTime())) return d.toISOString().slice(0,10);
-  // fallback (YYYY-MM-DD o DD/MM/YYYY)
   const s = String(v).slice(0,10);
   const parts = s.includes('/') ? s.split('/') : s.split('-');
   let y,m,dd;
@@ -107,7 +105,7 @@ async function onSubmit(e) {
     nombre: $('nombre').value.trim(),
     tipo: $('tipo').value.trim(),
     cantidad: Number($('cantidad').value),
-    fechaIngreso: toJsDate($('fechaIngreso').value),           // JS Date → oracledb bind
+    fechaIngreso: toJsDate($('fechaIngreso').value),           
     fechaCaducidad: $('fechaCaducidad').value ? toJsDate($('fechaCaducidad').value) : null,
     proveedor: $('proveedor').value.trim() || null,
     fuente: $('fuente').value

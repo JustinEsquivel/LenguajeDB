@@ -7,7 +7,6 @@ function toJsDate(v) {
   if (typeof v === 'number') return new Date(v);
 
   if (typeof v === 'string') {
-    // "YYYY-MM-DD" o "YYYY-MM-DDTHH:mm"
     const m = v.match(/^(\d{4})-(\d{2})-(\d{2})(?:T(\d{2}):(\d{2}))?$/);
     if (m) {
       const y = Number(m[1]);
@@ -20,7 +19,6 @@ function toJsDate(v) {
     const ms = Date.parse(v);
     if (!Number.isNaN(ms)) return new Date(ms);
   }
-  // fallback seguro
   return new Date();
 }
 
@@ -40,14 +38,12 @@ class Adopcion {
   }
 
 
-  // DELETE (revertir adopción) -> adopciones_pkg.del
   static async delete(id) {
     await callProcedure(`BEGIN adopciones_pkg.del(:id); END;`, { id });
     // Trigger/paquete vuelve mascota a 'Disponible'
     return true;
   }
 
-  // UPDATE fecha -> adopciones_pkg.upd_fecha
   static async updateFecha(id, fecha) {
     const jsDate = toJsDate(fecha);
     await callProcedure(
@@ -57,7 +53,7 @@ class Adopcion {
     return { id, fecha: jsDate.toISOString() };
   }
 
-  // READ (by id) -> adopciones_pkg.get_by_id (cursor)
+  // READ (by id) (cursor)
   static async findById(id) {
     const rows = await callFunctionCursor(
       `BEGIN :rc := adopciones_pkg.get_by_id(:p_id); END;`,
@@ -66,7 +62,7 @@ class Adopcion {
     return rows[0] || null;
   }
 
-  // READ (all) -> adopciones_pkg.list_all (cursor)
+  // READ (all)  (cursor)
   static async findAll() {
     return await callFunctionCursor(`BEGIN :rc := adopciones_pkg.list_all; END;`);
   }

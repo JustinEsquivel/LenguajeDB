@@ -1,4 +1,3 @@
-// js/auth.js  (ES Module)
 import {
   makeRequest,
   saveAuthData,
@@ -9,13 +8,10 @@ import {
   showSuccess
 } from './utils.js';
 
-// Endpoints (ajústalos si en tu server difieren)
-const REGISTER_ENDPOINT = '/api/usuarios'; // rutas de API
-const LOGIN_ENDPOINT    = '/auth/login';   // rutas de auth
+const REGISTER_ENDPOINT = '/api/usuarios'; 
+const LOGIN_ENDPOINT    = '/auth/login';   
 
-/* ================
-   Registro
-================ */
+
 const registerBtn = document.getElementById('registerButton');
 if (registerBtn) {
   registerBtn.addEventListener('click', onRegisterClick);
@@ -34,7 +30,7 @@ async function onRegisterClick(e) {
   const password = (document.getElementById('password')?.value || '');
   const telefono = (document.getElementById('telefono')?.value || '').trim();
 
-  // Validaciones mínimas
+  // Validaciones 
   if (!nombre || !apellido || !email || !password) {
     showError('Todos los campos son requeridos', errEl);
     return;
@@ -52,7 +48,6 @@ async function onRegisterClick(e) {
     return;
   }
 
-  // Deshabilita botón mientras envías
   registerBtn.disabled = true;
   const prevText = registerBtn.textContent;
   registerBtn.textContent = 'Registrando...';
@@ -78,9 +73,7 @@ async function onRegisterClick(e) {
   }
 }
 
-/* ================
-   Login
-================ */
+
 const loginForm = document.getElementById('loginForm');
 if (loginForm) {
   loginForm.addEventListener('submit', onLoginSubmit);
@@ -102,7 +95,6 @@ async function onLoginSubmit(e) {
   try {
     const payload = await makeRequest(LOGIN_ENDPOINT, 'POST', { email, password });
 
-    // backend puede devolver { token, user } o un objeto user plano; normalizamos
     const norm = normalizeRow(payload);
     const token = norm.token || norm.jwt || null;
     const userObj = norm.user ? normalizeRow(norm.user) : norm;
@@ -124,18 +116,14 @@ async function onLoginSubmit(e) {
   }
 }
 
-/* ================
-   Logout (opcional, si el botón existe)
-================ */
+
 document.getElementById('logoutBtn')?.addEventListener('click', (e) => {
   e.preventDefault();
   clearAuthData();
   window.location.href = 'login.html';
 });
 
-/* ================
-   Pinta nombre en dashboard (si existe el nodo)
-================ */
+
 document.addEventListener('DOMContentLoaded', () => {
   const user = getAuthData();
   if (!user) return;

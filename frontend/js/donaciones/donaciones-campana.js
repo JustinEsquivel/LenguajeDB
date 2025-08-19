@@ -1,8 +1,6 @@
-// frontend/js/donaciones/donaciones-campana.js
 import { makeRequest, getAuthData, getUserRole, normalizeRow } from '../utils.js';
 
 const qs = new URLSearchParams(location.search);
-// admite ?campana=123 o ?id=123
 const CAMPANA_ID = Number(qs.get('campana') || qs.get('id'));
 
 const isAdmin = () => Number(getUserRole()) === 1;
@@ -13,8 +11,6 @@ document.addEventListener('DOMContentLoaded', () => {
     return;
   }
 
-  // si quieres bloquear a no-admin, descomenta:
-  // if (!isAdmin()) { location.href = '/index.html'; return; }
 
   cargarCabeceraCampana();
   cargarDonaciones();
@@ -50,7 +46,6 @@ async function cargarCabeceraCampana() {
       bar.textContent = `${pct}%`;
     }
   } catch (e) {
-    // cabecera es opcional, si falla no bloqueamos la tabla
     console.warn('Cabecera campaña:', e.message);
   }
 }
@@ -119,7 +114,6 @@ async function cargarDonaciones() {
   }
 }
 
-/* ===== Alta rápida (form arriba de la tabla) ===== */
 function wireAltaRapida() {
   const form = document.getElementById('formNuevaDonacion');
   if (!form) return;
@@ -141,7 +135,7 @@ function wireAltaRapida() {
     if (!(monto > 0)) return alert('El monto debe ser mayor a 0');
 
     const payload = {
-      fecha,                     // 'YYYY-MM-DD'
+      fecha,                     
       cantidad: monto,
       usuario: usuarioOverride ? Number(usuarioOverride) : Number(user.id),
       campana: CAMPANA_ID
@@ -163,7 +157,6 @@ function wireAltaRapida() {
   });
 }
 
-/* ===== Editar / Eliminar ===== */
 async function onDelete(ev) {
   const id = ev.currentTarget.getAttribute('data-del');
   if (!id) return;
@@ -177,12 +170,10 @@ async function onDelete(ev) {
   }
 }
 
-// Modal simple con prompt (puedes reemplazar por modal Bootstrap si quieres)
 async function onEditOpen(ev) {
   const id = ev.currentTarget.getAttribute('data-edit');
   if (!id) return;
 
-  // Cargar fila concreta (si haces endpoint específico, úsalo; si no, busca en la tabla)
   let row;
   try {
     row = await makeRequest(`/donaciones/${id}`, 'GET');

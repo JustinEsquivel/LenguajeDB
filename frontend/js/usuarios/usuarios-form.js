@@ -1,4 +1,3 @@
-// /js/usuarios/usuarios-form.js
 import { makeRequest, normalizeRow } from '/js/utils.js';
 
 let EDIT = false;
@@ -28,8 +27,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       setVal('email', r.email);
       setVal('telefono', r.telefono || '');
       setVal('rol', r.rol);
-      CURRENT_PASSWORD = r.password || ''; // ⚠️ si tu backend devuelve hash, aquí llegará el hash
-      // password: se deja vacío el input (placeholder) y si no se escribe, se mantiene el actual
+      CURRENT_PASSWORD = r.password || ''; 
       const cancel = document.getElementById('cancelLink');
       if (cancel) cancel.href = '/pages/usuarios/usuarios.html';
     } catch (e) {
@@ -54,7 +52,7 @@ function getPayload(){
   };
   const pwdInput = document.getElementById('password');
   const newPwd = (pwdInput?.value || '').trim();
-  p.password = EDIT ? (newPwd || CURRENT_PASSWORD) : newPwd; // en edición, conserva si no se escribe
+  p.password = EDIT ? (newPwd || CURRENT_PASSWORD) : newPwd; 
   return p;
 }
 

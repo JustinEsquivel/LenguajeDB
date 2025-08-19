@@ -1,4 +1,3 @@
-// /js/inventario/inventario-admin.js
 import { makeRequest } from '../utils.js';
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -43,7 +42,6 @@ async function loadInventario(search = '') {
   try {
     let data = [];
     if (search) {
-      // Si algún día creas esta ruta, se usa. Si falla, caemos a cliente.
       try {
         data = await makeRequest('/inventario-search', 'POST', { search });
       } catch {

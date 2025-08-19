@@ -42,7 +42,7 @@ async function loadAdopciones(search = '') {
       if (uid) uIds.add(uid);
     }
 
-    // 2) Resolver nombres (si la API ya los manda, se usan; si no, se consulta por ID)
+    // 2) Resolver nombres 
     const [mMap, uMap] = await Promise.all([
       getMascotaMap([...mIds]),
       getUsuarioMap([...uIds]),
@@ -122,7 +122,6 @@ async function loadAdopciones(search = '') {
   }
 }
 
-/* ---------- Resolutores de nombre (con pequeño caché) ---------- */
 const mascotaCache = new Map();
 const usuarioCache = new Map();
 
@@ -133,13 +132,12 @@ async function getMascotaMap(ids) {
     const key = String(id);
     if (mascotaCache.has(key)) { map.set(key, mascotaCache.get(key)); return; }
     try {
-      // Ajusta la ruta si tu API no usa /api
       const m = await makeRequest(`/api/mascotas/${encodeURIComponent(key)}`, 'GET');
       const nombre = m?.nombre || key;
       mascotaCache.set(key, nombre);
       map.set(key, nombre);
     } catch {
-      map.set(key, String(id)); // fallback: solo id, sin '#'
+      map.set(key, String(id)); 
     }
   }));
   return map;
@@ -152,13 +150,12 @@ async function getUsuarioMap(ids) {
     const key = String(id);
     if (usuarioCache.has(key)) { map.set(key, usuarioCache.get(key)); return; }
     try {
-      // Ajusta la ruta si tu API no usa /api
       const u = await makeRequest(`/api/usuarios/${encodeURIComponent(key)}`, 'GET');
       const nombre = [u?.nombre, u?.apellido].filter(Boolean).join(' ').trim() || u?.email || key;
       usuarioCache.set(key, nombre);
       map.set(key, nombre);
     } catch {
-      map.set(key, String(id)); // fallback: solo id, sin '#'
+      map.set(key, String(id)); 
     }
   }));
   return map;

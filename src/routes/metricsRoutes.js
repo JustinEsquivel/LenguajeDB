@@ -3,7 +3,6 @@ const router = express.Router();
 const oracledb = require('oracledb');
 const { getConnection, closeConnection } = require('../config/db');
 
-// GET /api/metrics/home -> contadores de portada
 router.get('/home', async (req, res) => {
   let cn;
   try {
@@ -24,7 +23,6 @@ router.get('/home', async (req, res) => {
   }
 });
 
-// GET /api/metrics/dashboard -> KPIs del dashboard
 router.get('/dashboard', async (req, res) => {
   let cn;
   try {
@@ -37,7 +35,6 @@ router.get('/dashboard', async (req, res) => {
     const totAdopciones  = await q(`SELECT COUNT(*) FROM Adopciones`);
     const totCampanias   = await q(`SELECT COUNT(*) FROM "CAMPAÑAS"`);
     const totReportes    = await q(`SELECT COUNT(*) FROM Reportes`);
-    // Si usas estados “En Observación / En Tratamiento” en Mascotas, ajusta:
     const totObservacion = await q(`SELECT COUNT(*) FROM Mascotas WHERE UPPER(estado) IN ('EN OBSERVACION','EN OBSERVACIÓN')`);
     const totTratamiento = await q(`SELECT COUNT(*) FROM Mascotas WHERE UPPER(estado)='EN TRATAMIENTO'`);
 
@@ -54,7 +51,6 @@ router.get('/dashboard', async (req, res) => {
   }
 });
 
-// GET /api/metrics/recent -> tablas “recientes” del dashboard
 router.get('/recent', async (req, res) => {
   let cn;
   try {

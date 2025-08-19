@@ -1,9 +1,7 @@
-// src/controllers/authController.js
 const { validationResult } = require('express-validator');
 const authService = require('../services/authService');
 
 class AuthController {
-  // POST /auth/login
   async login(req, res) {
     try {
       const errors = validationResult(req);
@@ -20,16 +18,12 @@ class AuthController {
       if (!user) {
         return res.status(401).json({ error: 'Credenciales inválidas' });
       }
-
-      // Si luego agregas JWT, devuélvelo aquí
       return res.status(200).json({ user });
     } catch (error) {
       console.error('Error en login:', error);
       return res.status(500).json({ error: error.message || 'Error en el servidor' });
     }
   }
-
-  // POST /api/usuarios  (registro)
   async register(req, res) {
     try {
       const errors = validationResult(req);
@@ -53,8 +47,6 @@ class AuthController {
       return res.status(500).json({ error: error.message || 'Error en el servidor' });
     }
   }
-
-  // (opcional) logout con sesiones
   logout(req, res) {
     try {
       authService.destroyUserSession(req);

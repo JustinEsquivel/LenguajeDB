@@ -1,4 +1,3 @@
-// /js/usuarios/usuarios-detalle.js
 import { makeRequest, normalizeRow } from '/js/utils.js';
 
 const $ = id => document.getElementById(id);

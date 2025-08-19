@@ -1,4 +1,3 @@
-// frontend/js/ui/header.js  (ES Module)
 import { getAuthData, clearAuthData } from '../utils.js';
 
 export function mountHeader() {
@@ -94,7 +93,6 @@ export function mountHeader() {
     </header>
   `;
 
-  // Cerrar sesión
   container.querySelector('#logoutBtn')?.addEventListener('click', (e) => {
     e.preventDefault();
     clearAuthData();
@@ -106,7 +104,6 @@ export function mountHeader() {
   });
 }
 
-// Utilidad mínima para evitar XSS en el saludo
 function esc(s = '') {
   return String(s).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;');
 }

@@ -24,13 +24,11 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (card) card.classList.toggle('d-none', !IS_ADMIN);
 });
 
-/* ----------------- helpers de fecha y dinero ----------------- */
 function toIso(d = new Date()) {
   const p = (n) => String(n).padStart(2, '0');
   return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
 }
 
-// Acepta Date o string; devuelve YYYY-MM-DD si es posible
 function fmtDate(v) {
   if (!v) return '';
   if (v instanceof Date && !isNaN(v)) return toIso(v);
@@ -43,7 +41,6 @@ function fmtDate(v) {
 
 function money(n) { return Number(n || 0).toLocaleString(); }
 
-/* ----------------- Carga de campaña ----------------- */
 async function cargarCampania() {
   try {
     const c = normalizeRow(await makeRequest(`/campanas/${ID}`, 'GET'));
@@ -82,7 +79,6 @@ async function totalRecaudado() {
     const r = await makeRequest(`/campanas/${ID}/donaciones-total`, 'GET');
     return Number((r && (r.total ?? r.TOTAL)) || 0);
   } catch {
-    // fallback: si no hay endpoint de total, suma en cliente (pero solo si admin para no pedir la lista a público)
     if (!IS_ADMIN) return 0;
     try {
       const list = await makeRequest(`/campanas/${ID}/donaciones`, 'GET');
@@ -91,7 +87,6 @@ async function totalRecaudado() {
   }
 }
 
-/* ----------------- Tabla de donaciones (solo admin) ----------------- */
 async function cargarDonaciones() {
   if (!IS_ADMIN) return; // seguridad extra
 
@@ -123,7 +118,6 @@ async function cargarDonaciones() {
   }
 }
 
-/* ----------------- Envío de donación ----------------- */
 function wireDonar() {
   const form = document.getElementById('donarForm');
   if (!form) return;
@@ -137,7 +131,7 @@ function wireDonar() {
     const u = getAuthData();
     if (!u) return alert('Debes iniciar sesión para donar');
 
-    const fecha = (document.getElementById('donarFecha')?.value || '').trim(); // YYYY-MM-DD
+    const fecha = (document.getElementById('donarFecha')?.value || '').trim(); 
     const monto = Number((document.getElementById('donarMonto')?.value || '0').replace(',', '.'));
 
     if (!fecha) return alert('La fecha es obligatoria');
@@ -149,7 +143,7 @@ function wireDonar() {
       btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...';
 
       await makeRequest('/donaciones', 'POST', {
-        fecha,                 // 'YYYY-MM-DD'
+        fecha,                 
         cantidad: monto,
         usuario: Number(u.id),
         campana: ID

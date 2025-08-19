@@ -1,16 +1,13 @@
-// backend/models/voluntario.js
 const oracledb = require('oracledb');
 const { callProcedure, callFunctionCursor } = require('../config/db');
 const Usuario = require('./usuario');
 
-// lee una propiedad tolerando mayúsculas/minúsculas
 function pick(obj, key) {
   if (!obj) return undefined;
   const k = String(key);
   return obj[k] ?? obj[k.toUpperCase()] ?? obj[k.toLowerCase()];
 }
 
-// Normaliza cualquier valor a Date para Oracle DATE
 function toOraDate(v) {
   if (!v) return null;
   if (v instanceof Date) return v;
@@ -23,7 +20,6 @@ function toOraDate(v) {
   throw new Error('Fecha inválida: use formato YYYY-MM-DD');
 }
 
-// Asegura que el usuario existe y tiene rol=3 (o texto "Voluntario")
 async function ensureUsuarioVoluntario(usuario) {
   const id = Number(usuario);
   if (!Number.isInteger(id)) throw new Error('usuario debe ser un ID numérico');
@@ -31,7 +27,7 @@ async function ensureUsuarioVoluntario(usuario) {
   const u = await Usuario.findById(id);
   if (!u) throw new Error(`Usuario ${id} no existe`);
 
-  const rawRol = pick(u, 'rol');                // 3 o "Voluntario"
+  const rawRol = pick(u, 'rol');                
   const rolNum = Number(rawRol);
   const esVoluntario = (rolNum === 3) || (String(rawRol).toLowerCase() === 'voluntario');
 
@@ -40,14 +36,13 @@ async function ensureUsuarioVoluntario(usuario) {
 }
 
 class Voluntario {
-  // CREATE -> voluntarios_pkg.ins
   static async create(data) {
     const usuarioId = await ensureUsuarioVoluntario(data.usuario);
     const r = await callProcedure(
       `BEGIN voluntarios_pkg.ins(:usuario,:fecha_inicio,:horas,:estado,:p_id); END;`,
       {
-        usuario:      usuarioId,                         // FK validada
-        fecha_inicio: toOraDate(data.fechaInicio),       // JS Date -> Oracle DATE
+        usuario:      usuarioId,                         
+        fecha_inicio: toOraDate(data.fechaInicio),       
         horas:        Number(data.horas ?? 0),
         estado:       data.estado || 'Activo',
         p_id:         { dir: oracledb.BIND_OUT, type: oracledb.NUMBER }
@@ -61,7 +56,6 @@ class Voluntario {
     );
   }
 
-  // UPDATE -> voluntarios_pkg.upd
   static async update(id, data) {
     const usuarioId = await ensureUsuarioVoluntario(data.usuario);
     await callProcedure(
@@ -78,13 +72,11 @@ class Voluntario {
     return { id: Number(id), ...data, usuario: usuarioId };
   }
 
-  // DELETE -> voluntarios_pkg.del
   static async delete(id) {
     await callProcedure(`BEGIN voluntarios_pkg.del(:id); END;`, { id: Number(id) });
     return true;
   }
 
-  // READ (by id)
   static async findById(id) {
     const rows = await callFunctionCursor(
       `BEGIN :rc := voluntarios_pkg.get_by_id(:p_id); END;`,
@@ -93,7 +85,6 @@ class Voluntario {
     return rows[0] || null;
   }
 
-  // READ (activos)
   static async findActivos() {
     return await callFunctionCursor(`BEGIN :rc := voluntarios_pkg.list_activos; END;`);
   }

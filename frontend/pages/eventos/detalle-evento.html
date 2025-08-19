@@ -16,13 +16,11 @@
         <h4 class="mb-0">Detalles del Evento</h4>
       </div>
       <div class="card-body">
-        <!-- Loader -->
         <div id="loadingIndicator" class="text-center py-4">
           <div class="spinner-border text-primary"></div>
           <p class="mb-0">Cargando información...</p>
         </div>
 
-        <!-- Error -->
         <div id="errorContainer" class="alert alert-danger d-none">
           <i class="fas fa-exclamation-triangle me-2"></i>
           <span class="error-message">No fue posible cargar el evento.</span>
@@ -31,7 +29,6 @@
           </button>
         </div>
 
-        <!-- Detalle -->
         <div id="eventoDetails" class="d-none">
           <dl class="row mb-0">
             <dt class="col-sm-3">Nombre:</dt>
@@ -66,12 +63,10 @@
               <i class="fas fa-arrow-left me-1"></i> Volver
             </a>
 
-            <!-- Solo admin -->
             <a href="#" id="editLink" class="btn btn-warning d-none">
               <i class="fas fa-edit me-1"></i> Editar
             </a>
 
-            <!-- Botones de asistencia -->
             <button id="btnAsistir" class="btn btn-success d-none">
               <i class="fas fa-user-check me-1"></i> Asistir
             </button>
@@ -79,12 +74,11 @@
               <i class="fas fa-user-times me-1"></i> Cancelar asistencia
             </button>
           </div>
-        </div><!-- /#eventoDetails -->
+        </div>
       </div>
     </div>
   </main>
 
-  <!-- Scripts -->
   <script type="module" src="/js/utils.js"></script>
   <script type="module" src="/js/ui/header.js"></script>
   <script type="module" src="/js/eventos/eventos-detalle.js"></script>

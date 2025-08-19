@@ -1,4 +1,3 @@
-// ES Module
 import { makeRequest, normalizeRow } from '/js/utils.js';
 
 const $ = id => document.getElementById(id);
@@ -79,7 +78,6 @@ function fmtDate(v){
   return isNaN(d) ? String(v).slice(0,10) : d.toLocaleDateString();
 }
 
-// API helpers con fallback /api
 async function getById(id){
   try { return await makeRequest(`/api/voluntarios/${id}`, 'GET'); }
   catch { return await makeRequest(`/voluntarios/${id}`, 'GET'); }

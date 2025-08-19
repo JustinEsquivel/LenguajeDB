@@ -1,8 +1,7 @@
-// /js/index.js
+
 import { makeRequest } from '/js/utils.js';
 
 document.addEventListener('DOMContentLoaded', () => {
-  // Cargar contadores en paralelo (silencioso ante errores)
   Promise.allSettled([
     loadMascotasCount(),
     loadAdopcionesCount(),
@@ -21,15 +20,13 @@ async function tryFirst(endpoints = []) {
     try {
       const r = await makeRequest(ep, 'GET');
       return r;
-    } catch (_) { /* intenta el siguiente */ }
+    } catch (_) {  }
   }
   throw new Error('Sin endpoints válidos');
 }
 
-/* ---- Mascotas ---- */
 async function loadMascotasCount() {
   try {
-    // 1) endpoint de conteo si existe; 2) lista completa y contamos; 3) fallback sin /api
     const data =
       (await tryFirst(['/api/mascotas-count'])) ??
       (await tryFirst(['/api/mascotas', '/mascotas']));
@@ -43,7 +40,6 @@ async function loadMascotasCount() {
   }
 }
 
-/* ---- Adopciones ---- */
 async function loadAdopcionesCount() {
   try {
     const data =
@@ -59,7 +55,6 @@ async function loadAdopcionesCount() {
   }
 }
 
-/* ---- Campañas activas ---- */
 async function loadCampanasCount() {
   try {
     const rows = await tryFirst(['/api/campanas-activas', '/campanas-activas']);
@@ -70,10 +65,8 @@ async function loadCampanasCount() {
   }
 }
 
-/* ---- Voluntarios (activos) ---- */
 async function loadVoluntariosCount() {
   try {
-    // Intenta endpoints típicos; ajusta si tu backend usa otros
     const data =
       (await tryFirst(['/api/usuarios-activos-count'])) ??
       (await tryFirst([

@@ -1,4 +1,3 @@
-// /js/inventario/inventario-detalle.js
 import { makeRequest, normalizeRow, getAuthData } from '../utils.js';
 
 const $ = (id) => document.getElementById(id);
@@ -17,8 +16,6 @@ const fmtDate = (d) => {
 document.addEventListener('DOMContentLoaded', async () => {
   const user = getAuthData();
   if (!user || Number(user.rol) !== 1) {
-    // Si quieres que cualquiera vea el detalle, elimina este bloque.
-    // window.location.replace('/index.html'); return;
   }
 
   const params = new URLSearchParams(location.search);

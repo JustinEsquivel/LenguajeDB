@@ -1,4 +1,3 @@
-// ES Module
 import { makeRequest, getAuthData } from '../utils.js';
 
 const $ = (id) => document.getElementById(id);
@@ -30,13 +29,11 @@ async function init() {
   $('btnCrearVol')?.addEventListener('click', crearVoluntariado);
 }
 
-/* ===========================
-   Voluntariado (cargar/crear)
-=========================== */
+
 async function loadVoluntariado() {
   toggleVolLoading(true);
   try {
-    // 1) Intento directo por usuario (si tu backend expone este endpoint)
+    // 1) Intento directo por usuario 
     let vol = null;
     try {
       vol = await makeRequest(`/api/voluntarios/by-usuario/${USER_ID}`, 'GET');
@@ -120,9 +117,6 @@ function renderVol(v) {
   $('volWrapper').classList.remove('d-none');
 }
 
-/* ===========================
-   Actividades (CRUD simple)
-=========================== */
 async function loadActividades() {
   if (!VOL_ID) return;
   try {
@@ -193,9 +187,6 @@ async function deleteTodas() {
   }
 }
 
-/* ===========================
-   Utils UI
-=========================== */
 function toggleVolLoading(on) {
   $('loadingVol')?.classList.toggle('d-none', !on);
   if (on) {

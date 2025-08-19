@@ -1,4 +1,3 @@
-// /js/usuarios/usuarios-admin.js
 import { makeRequest, normalizeRow } from '/js/utils.js';
 
 const val = (o,k)=> o?.[k] ?? o?.[k?.toUpperCase?.()] ?? o?.[k?.toLowerCase?.()] ?? '';

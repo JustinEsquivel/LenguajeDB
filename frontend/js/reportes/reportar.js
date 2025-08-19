@@ -39,14 +39,14 @@ async function onSubmit(e) {
 
   // Usuario: puede ser null (anónimo)
   const u = getAuthData();
-  // Mascota: puede ser null (no registrada / calle). Si no es número, la forzamos a null
+  // Mascota: puede ser null (no registrada / calle). 
   const mascota =
     mascotaId && /^\d+$/.test(mascotaId) ? Number(mascotaId) : null;
 
   const payload = {
-    fecha,                          // 'YYYY-MM-DD' (el backend hará TO_DATE)
+    fecha,                          
     usuario: u ? Number(u.id) : null,
-    mascota,                        // null si no hay mascota registrada
+    mascota,                        
     provincia,
     canton,
     distrito,
@@ -58,7 +58,6 @@ async function onSubmit(e) {
     btn.disabled = true;
     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...';
 
-    // utils.buildUrl('/reportes') => /api/reportes
     await makeRequest('/reportes', 'POST', payload);
 
     showOk('¡Reporte enviado! Gracias por ayudarnos 💚');

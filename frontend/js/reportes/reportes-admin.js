@@ -1,4 +1,3 @@
-// /frontend/js/reportes/reportes-admin.js
 import { makeRequest, normalizeRow } from '../utils.js';
 
 document.addEventListener('DOMContentLoaded', () => {

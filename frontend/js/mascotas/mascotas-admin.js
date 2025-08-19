@@ -1,4 +1,3 @@
-// frontend/js/mascotas/mascotas-admin.js (ES Module)
 import { makeRequest } from '../utils.js';
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -29,8 +28,8 @@ function esc(str = '') {
 }
 
 async function loadMascotas(search = '') {
-  const tbody = document.querySelector('#tablaMascotas tbody');     // ✅ coincide con tu HTML
-  const noMsg = document.getElementById('noMascotas');              // ✅ coincide con tu HTML
+  const tbody = document.querySelector('#tablaMascotas tbody');     
+  const noMsg = document.getElementById('noMascotas');              
   const loader = document.getElementById('loadingIndicator');
 
   if (tbody) tbody.innerHTML = '';
@@ -40,7 +39,6 @@ async function loadMascotas(search = '') {
   try {
     let data = [];
     if (search) {
-      // si tu API real va con /api, cambia estas rutas
       data = await makeRequest('/mascotas-search', 'POST', { search });
     } else {
       data = await makeRequest('/mascotas', 'GET');
@@ -95,7 +93,7 @@ async function loadMascotas(search = '') {
         if (!id) return;
         if (!confirm('¿Eliminar esta mascota?')) return;
         try {
-          await makeRequest(`/mascotas/${id}`, 'DELETE'); // cambia a /api/mascotas/${id} si corresponde
+          await makeRequest(`/mascotas/${id}`, 'DELETE'); 
           await loadMascotas((document.getElementById('searchInput')?.value || '').trim());
         } catch (err) {
           console.error(err);

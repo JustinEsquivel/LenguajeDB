@@ -38,11 +38,9 @@ async function loadCampanasActivas(searchTerm = '') {
   noResults.classList.add('d-none');
   loader.classList.remove('d-none');
 
-  // 1er intento (usa buildUrl -> normalmente /api/campanas-activas)
   let url1 = '/campanas-activas';
   if (searchTerm) url1 += `?NOMBRE=${encodeURIComponent(searchTerm)}`;
 
-  // 2º intento (URL absoluta, evita el builder por si hay montajes raros)
   const url2Base = 'http://localhost:5000/api/campanas-activas';
   const url2 = searchTerm ? `${url2Base}?NOMBRE=${encodeURIComponent(searchTerm)}` : url2Base;
 
@@ -55,7 +53,7 @@ async function loadCampanasActivas(searchTerm = '') {
     } catch (e1) {
       console.warn('[Campañas] Intento 1 falló:', e1?.message || e1);
       console.log('[Campañas] Intento 2 =>', url2);
-      data = await makeRequest(url2, 'GET'); // absoluta (no pasa por buildUrl)
+      data = await makeRequest(url2, 'GET'); 
     }
 
     if (!Array.isArray(data) || data.length === 0) {

@@ -1,12 +1,9 @@
-// models/campana.js
 const oracledb = require('oracledb');
 const { callProcedure, callFunctionCursor } = require('../config/db');
 
-/** Normaliza/convierte un valor tipo fecha recibido del front a Date JS para oracledb */
 function toJsDate(val) {
   if (!val) return null;
   if (val instanceof Date) return val;
-  // acepta 'YYYY-MM-DD' o 'YYYY-MM-DDTHH:mm'
   const s = String(val).trim();
   const withTime = s.length > 10 ? s : `${s}T00:00:00`;
   const d = new Date(withTime);
@@ -15,7 +12,6 @@ function toJsDate(val) {
 }
 
 class Campana {
-  // CREATE -> campanas_pkg.ins
   static async create(data) {
     const plsql = `
     BEGIN
@@ -33,8 +29,8 @@ class Campana {
     const binds = {
       nombre: data.nombre,
       descripcion: data.descripcion,
-      inicio: data.fechaInicio,  // 'YYYY-MM-DD'
-      fin: data.fechaFin,     // 'YYYY-MM-DD'
+      inicio: data.fechaInicio,  
+      fin: data.fechaFin,     
       objetivo: data.objetivo,
       estado: data.estado,
       usuario: data.usuario,
@@ -44,7 +40,6 @@ class Campana {
     return { id: r.outBinds.p_id, ...data };
   }
 
-  // UPDATE -> campanas_pkg.upd
   static async update(id, data) {
     const plsql = `
     BEGIN
@@ -63,8 +58,8 @@ class Campana {
       id,
       nombre: data.nombre,
       descripcion: data.descripcion,
-      inicio: data.fechaInicio,  // 'YYYY-MM-DD'
-      fin: data.fechaFin,     // 'YYYY-MM-DD'
+      inicio: data.fechaInicio,  
+      fin: data.fechaFin,    
       objetivo: data.objetivo,
       estado: data.estado,
       usuario: data.usuario
@@ -73,13 +68,11 @@ class Campana {
     return { id, ...data };
   }
 
-  // DELETE -> campanas_pkg.del
   static async delete(id) {
     await callProcedure(`BEGIN campanas_pkg.del(:id); END;`, { id: Number(id) });
     return true;
   }
 
-  // READ (by id) -> campanas_pkg.get_by_id
   static async findById(id) {
     const rows = await callFunctionCursor(
       `BEGIN :rc := campanas_pkg.get_by_id(:p_id); END;`,
@@ -88,17 +81,14 @@ class Campana {
     return rows[0] || null;
   }
 
-  // READ (activas) -> campanas_pkg.list_activas
   static async findActivas() {
     return await callFunctionCursor(`BEGIN :rc := campanas_pkg.list_activas; END;`);
   }
 
-  // READ (todas) -> campanas_pkg.list_all
   static async findAll() {
     return await callFunctionCursor(`BEGIN :rc := campanas_pkg.list_all; END;`);
   }
 
-  // Métrica -> campanas_pkg.recaudado_total
   static async totalRecaudado(id) {
     const r = await callProcedure(
       `BEGIN :out := campanas_pkg.recaudado_total(:p_id); END;`,

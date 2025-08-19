@@ -1,4 +1,3 @@
-// frontend/js/eventos/eventos-publicos.js
 import { makeRequest, normalizeRow } from '../utils.js';
 
 const grid  = document.getElementById('eventosContainer');

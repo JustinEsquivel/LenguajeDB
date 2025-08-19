@@ -1,52 +1,41 @@
-// /js/campanas/campanas-form.js
 import { makeRequest, normalizeRow, getAuthData } from '../utils.js';
 
-/* =========================
- * Helpers
- * ======================= */
+
 const pick = (...ids) => ids.map(id => document.getElementById(id)).find(Boolean);
 const getV  = el => (el?.value ?? '').trim();
 
 const toInputDate = (v) => {
-  // Convierte lo que venga (Date | string) a 'YYYY-MM-DD' para <input type="date">
   if (!v) return '';
   if (v instanceof Date && !Number.isNaN(v.getTime())) return v.toISOString().slice(0,10);
 
   const s = String(v);
 
-  // Maneja 'YYYY-MM-DD' o 'YYYY-MM-DDTHH:mm:ss...'
   const m = s.match(/^(\d{4}-\d{2}-\d{2})/);
   if (m) return m[1];
 
-  // Maneja 'DD/MM/YYYY'
   if (/^\d{2}\/\d{2}\/\d{4}$/.test(s)) {
     const [dd, mm, yy] = s.split('/').map(n => parseInt(n,10));
     const d = new Date(yy, mm-1, dd);
     return Number.isNaN(d.getTime()) ? '' : d.toISOString().slice(0,10);
   }
 
-  // Último intento con Date
   const d = new Date(s);
   return Number.isNaN(d.getTime()) ? '' : d.toISOString().slice(0,10);
 };
 
-// Fuerza exactamente 'YYYY-MM-DD' o devuelve null si no válido
 function ymd(v){
   if (!v) return null;
   const s = String(v).trim();
 
-  // ya viene 'YYYY-MM-DD' o con hora
   const m = s.match(/^(\d{4}-\d{2}-\d{2})/);
   if (m) return m[1];
 
-  // 'DD/MM/YYYY'
   if (/^\d{2}\/\d{2}\/\d{4}$/.test(s)) {
     const [dd, mm, yy] = s.split('/').map(n => parseInt(n,10));
     const d = new Date(yy, mm-1, dd);
     return Number.isNaN(d.getTime()) ? null : d.toISOString().slice(0,10);
   }
 
-  // Date genérico
   const d = new Date(s);
   return Number.isNaN(d.getTime()) ? null : d.toISOString().slice(0,10);
 }
@@ -56,9 +45,6 @@ function num(v){
   return Number.isFinite(n) ? n : NaN;
 }
 
-/* =========================
- * Página
- * ======================= */
 document.addEventListener('DOMContentLoaded', async () => {
   const params = new URLSearchParams(location.search);
   const ID = params.get('id');
@@ -90,7 +76,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     return;
   }
 
-  // ----- Modo edición -----
   if (ID) {
     try {
       loader?.classList.remove('d-none');
@@ -114,12 +99,10 @@ document.addEventListener('DOMContentLoaded', async () => {
       form?.classList.remove('d-none');
     }
   } else {
-    // ----- Modo crear -----
     loader?.classList.add('d-none');
     form?.classList.remove('d-none');
   }
 
-  /* ===== Submit ===== */
   form?.addEventListener('submit', async (e) => {
     e.preventDefault();
     errorBox?.classList.add('d-none');
@@ -150,14 +133,13 @@ document.addEventListener('DOMContentLoaded', async () => {
       return;
     }
 
-    // Payload con fechas SIEMPRE como 'YYYY-MM-DD' y con ambos nombres de clave
     const payload = {
       nombre,
       descripcion: desc,
-      fechainicio: iniYMD,   // snake
-      fechafin:    finYMD,   // snake
-      fechaInicio: iniYMD,   // camel (por si la capa Node espera esta)
-      fechaFin:    finYMD,   // camel
+      fechainicio: iniYMD,   
+      fechafin:    finYMD,   
+      fechaInicio: iniYMD,   
+      fechaFin:    finYMD,   
       objetivo: obj,
       estado,
       usuario

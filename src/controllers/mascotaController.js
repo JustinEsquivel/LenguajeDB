@@ -1,18 +1,16 @@
-// src/controllers/mascotaController.js
 const mascotaService = require('../services/mascotaService');
 
 class MascotaController {
-  // GET /api/mascotas
   async getAllMascotas(req, res) {
     try {
-      const role = Number(req.headers['x-role'] || req.query.role || 0); // 1=admin
-      const scope = (req.query.scope || '').toLowerCase();              // opcional: ?scope=all
+      const role = Number(req.headers['x-role'] || req.query.role || 0); 
+      const scope = (req.query.scope || '').toLowerCase();             
 
       let mascotas;
       if (role === 1 || scope === 'all') {
-        mascotas = await mascotaService.getAllMascotas();               // 🔥 todas
+        mascotas = await mascotaService.getAllMascotas();              
       } else {
-        mascotas = await mascotaService.getMascotasDisponibles();       // solo disponibles
+        mascotas = await mascotaService.getMascotasDisponibles();       
       }
       return res.status(200).json(mascotas);
     } catch (error) {
@@ -21,7 +19,6 @@ class MascotaController {
     }
   }
 
-  // GET /api/mascotas/:id
   async getMascotaById(req, res) {
     try {
       const mascota = await mascotaService.getMascotaById(req.params.id);
@@ -32,18 +29,15 @@ class MascotaController {
     }
   }
 
-  // POST /api/mascotas-search  {search}
   async searchMascotaByName(req, res) {
     try {
       const role = Number(req.headers['x-role'] || req.query.role || 0);
       const term = req.body?.search || '';
 
-      // Si es admin, busca en TODAS; si no, en disponibles
       if (role === 1) {
-        const mascotas = await mascotaService.searchMascotaByName(term); // usa list_all_by_name
+        const mascotas = await mascotaService.searchMascotaByName(term); 
         return res.status(200).json(mascotas);
       } else {
-        // filtra disponibles por nombre
         const disponibles = await mascotaService.getMascotasDisponibles('');
         const q = term.toLowerCase();
         const filtradas = disponibles.filter(m => (m.NOMBRE || m.nombre || '').toLowerCase().includes(q));
@@ -92,7 +86,6 @@ class MascotaController {
     }
   }
 
-  // GET /api/mascotas-disponibles?NOMBRE=...
   async getMascotasDisponibles(req, res) {
     try {
       const name = req.query.NOMBRE || '';

@@ -1,4 +1,3 @@
-// services/campanaService.js
 const Campana = require('../models/campana');
 
 function ciIncludes(haystack, needle) {

@@ -1,4 +1,3 @@
-// frontend/js/campanas/campanas-admin.js
 import { makeRequest, normalizeRow } from '../utils.js';
 
 function val(o, k) {
@@ -35,10 +34,8 @@ async function loadCampanas(search = '') {
 
     let data = [];
     if (search) {
-      // si tu backend usa /api, cambia a /api/campanas-search
       data = await makeRequest(`/campanas-search`, 'POST', { search });
     } else {
-      // si tu backend usa /api, cambia a /api/campanas
       data = await makeRequest(`/campanas`, 'GET');
     }
 
@@ -94,7 +91,6 @@ async function loadCampanas(search = '') {
         if (!id) return;
         if (!confirm('¿Eliminar esta campaña? (Solo si no tiene donaciones)')) return;
         try {
-          // si tu backend usa /api, cambia a /api/campanas/${id}
           await makeRequest(`/campanas/${id}`, 'DELETE');
           await loadCampanas((document.getElementById('searchInput')?.value || '').trim());
         } catch (err) {

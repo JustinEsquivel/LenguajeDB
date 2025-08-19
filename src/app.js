@@ -1,4 +1,3 @@
-// src/app.js
 const path = require('path');
 const express = require('express');
 const cors = require('cors');
@@ -8,32 +7,27 @@ const flash = require('connect-flash');
 
 const app = express();
 
-// ==== CORS (desarrollo) ====
 const CORS_OPTS = {
   origin: ['http://localhost:5500', 'http://127.0.0.1:5500'],
   credentials: true
 };
 app.use(cors(CORS_OPTS));
-// Preflight
 app.options('*', cors(CORS_OPTS));
 
-// ==== Sesión (en dev, secure: false) ====
-app.set('trust proxy', 1); // útil si en el futuro usas proxy
+app.set('trust proxy', 1); 
 app.use(session({
-  secret: 'tu_super_secreto_sesion', // ¡cámbialo en prod!
+  secret: 'super_secreto_sesion', 
   resave: false,
   saveUninitialized: false,
   cookie: {
-    secure: false,        // en dev: false; en prod pon true + HTTPS
+    secure: false,        
     sameSite: 'lax',
     maxAge: 24 * 60 * 60 * 1000
   }
 }));
 
-// Flash
 app.use(flash());
 
-// Variables "globales" para vistas (si las usas)
 app.use((req, res, next) => {
   res.locals.currentUser = req.session.user || null;
   res.locals.successMessages = req.flash('success');
@@ -41,19 +35,15 @@ app.use((req, res, next) => {
   next();
 });
 
-// ==== Parsers ====
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-// ==== Static Frontend ====
 app.use(express.static(path.join(__dirname, '../frontend')));
 
-// Root -> index.html del frontend
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, '../frontend', 'index.html'));
 });
 
-// ==== Rutas API ====
 app.use('/api', require('./routes/usuarioRoutes'));
 app.use('/auth', require('./routes/authRoutes'));
 app.use('/api', require('./routes/mascotaRoutes'));
@@ -70,17 +60,14 @@ app.use('/api', require('./routes/campanaRoutes'));
 app.use('/api/metrics', require('./routes/metricsRoutes'));
 
 
-// ==== Healthcheck (debug rápido) ====
 app.get('/health', (req, res) => {
   res.json({ ok: true, time: new Date().toISOString() });
 });
 
-// ==== 404 JSON ====
 app.use((req, res) => {
   res.status(404).json({ error: 'Recurso no encontrado' });
 });
 
-// ==== Error Handler JSON (dev) ====
 app.use((err, req, res, next) => {
   console.error('❌ ERROR:', err);
   const status = err.status || 500;
@@ -89,8 +76,7 @@ app.use((err, req, res, next) => {
   res.status(status).json({ error: message, details });
 });
 
-// ==== Start ====
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-  console.log(`✅ Servidor corriendo en http://localhost:${PORT}`);
+  console.log(`Servidor corriendo en http://localhost:${PORT}`);
 });

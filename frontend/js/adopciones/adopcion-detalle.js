@@ -1,4 +1,3 @@
-// /js/adopciones/adopcion-detalle.js
 import { makeRequest, getAuthData, normalizeRow } from '/js/utils.js';
 
 const $ = (id) => document.getElementById(id);

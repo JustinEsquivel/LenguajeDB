@@ -1,4 +1,3 @@
-// /js/eventos/eventos-detalle.js
 import { makeRequest, normalizeRow, getAuthData } from '../utils.js';
 
 function esc(s=''){
@@ -27,7 +26,6 @@ function esAsistible(estado=''){
   return e === 'planificado' || e === 'en curso';
 }
 
-/* === Asistencias (usa tus endpoints de asistencias_pkg) === */
 
 // GET /api/eventos/:id/asistencias -> length
 async function fetchAsistentesCount(eventoId){
@@ -59,7 +57,6 @@ async function deleteDesasistir(eventoId, usuarioId){
   return await makeRequest(`/api/eventos/${eventoId}/asistencias/usuario/${usuarioId}`, 'DELETE');
 }
 
-/* === Página === */
 document.addEventListener('DOMContentLoaded', async ()=>{
   const qs = new URLSearchParams(location.search);
   const id = qs.get('id');

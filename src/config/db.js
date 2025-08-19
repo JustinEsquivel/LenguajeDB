@@ -28,7 +28,7 @@ async function callProcedure(plsql, binds = {}, options = {}) {
   } finally { await closeConnection(conn); }
 }
 
-/** Ejecutar función que retorna SYS_REFCURSOR: BEGIN :rc := pkg.fn(...); END; */
+
 async function callFunctionCursor(plsql, binds = {}) {
   let conn;
   try {

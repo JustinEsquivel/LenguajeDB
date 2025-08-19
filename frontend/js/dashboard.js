@@ -1,8 +1,6 @@
-// /js/dashboard.js
 import { makeRequest, normalizeRow } from '/js/utils.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
-  // Ejecuta todo en paralelo, pero cada bloque maneja sus propios errores
   Promise.allSettled([
     loadKpis(),
     loadMascotasRecientes(),
@@ -13,9 +11,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   ]);
 });
 
-/* ========================
- * Utilidades
- * ======================*/
+
 function esc(s = '') {
   return String(s)
     .replaceAll('&', '&amp;')
@@ -39,27 +35,23 @@ async function tryFirst(endpoints = []) {
   throw new Error('Sin endpoints válidos');
 }
 
-/* ========================
- * KPIs
- * ======================*/
+
 async function loadKpis() {
   try {
     // Mascotas (total)
     let mascotas = await tryFirst(['/api/mascotas', '/mascotas']);
     if (!Array.isArray(mascotas)) mascotas = [];
-    // Disponibles (endpoint público si existe)
+    // Disponibles 
     let disponibles = [];
     try {
       disponibles = await tryFirst(['/api/mascotas-disponibles', '/mascotas-disponibles']);
       if (!Array.isArray(disponibles)) disponibles = [];
     } catch {
-      // fallback: filtra por estado
       disponibles = mascotas.filter(m => (normalizeRow(m).estado || '').toLowerCase() === 'disponible');
     }
     // Adoptadas (por estado en el objeto mascota)
     const adoptadas = mascotas.filter(m => (normalizeRow(m).estado || '').toLowerCase() === 'adoptado');
 
-    // Observación / Tratamiento (si tu backend maneja estos estados en mascota)
     const obs = mascotas.filter(m => (normalizeRow(m).estado || '').toLowerCase() === 'en observación');
     const trt = mascotas.filter(m => (normalizeRow(m).estado || '').toLowerCase() === 'en tratamiento');
 
@@ -77,14 +69,12 @@ async function loadKpis() {
       campanas = Array.isArray(rows) ? rows.length : 0;
     } catch { campanas = 0; }
 
-    // Reportes (si no tienes endpoint aún, queda 0)
     let reportes = 0;
     try {
       const rep = await tryFirst(['/api/reportes', '/reportes']);
       reportes = Array.isArray(rep) ? rep.length : (Number(rep?.total) || 0);
     } catch { reportes = 0; }
 
-    // Pintar
     setNum('kpiTotMascotas', mascotas.length);
     setNum('kpiDisponibles', disponibles.length);
     setNum('kpiAdoptadas', adoptadas.length);
@@ -95,7 +85,6 @@ async function loadKpis() {
     setNum('kpiReportes', reportes);
 
   } catch (e) {
-    // En caso de error general, evita dejar KPIs vacíos
     ['kpiTotMascotas', 'kpiDisponibles', 'kpiAdoptadas', 'kpiObservacion',
       'kpiTratamiento', 'kpiAdopciones', 'kpiCampanas', 'kpiReportes']
       .forEach(id => setNum(id, 0));
@@ -108,9 +97,7 @@ function setNum(id, n) {
   if (el) el.textContent = String(Number.isFinite(n) ? n : 0);
 }
 
-/* ========================
- * Mascotas recientes
- * ======================*/
+
 async function loadMascotasRecientes() {
   try {
     let rows = await tryFirst(['/api/mascotas', '/mascotas']);
@@ -145,9 +132,6 @@ async function loadMascotasRecientes() {
   }
 }
 
-/* ========================
- * Adopciones recientes
- * ======================*/
 const _userCache = new Map();
 const _petCache = new Map();
 
@@ -227,22 +211,18 @@ async function loadAdopcionesRecientes() {
   }
 }
 
-/* ========================
- * Campañas activas (KPI + Top 5)
- * ======================*/
+
 async function loadCampanasKpiYTabla() {
   try {
     const rows = await tryFirst(['/api/campanas-activas', '/campanas-activas']);
     const list = Array.isArray(rows) ? rows.map(normalizeRow) : [];
 
-    // KPI #campanas
     const kpi = document.getElementById('kpiCampanas');
     if (kpi) kpi.textContent = String(list.length);
 
     const lbl = document.getElementById('lblCampanasKpi');
     if (lbl) lbl.textContent = `${list.length} activas`;
 
-    // Orden por fin más próximo (el backend ya ordena; reforzamos)
     list.sort((a, b) => {
       const fa = new Date((a.fechafin || a.fin || '')?.toString().slice(0, 10));
       const fb = new Date((b.fechafin || b.fin || '')?.toString().slice(0, 10));
@@ -286,15 +266,13 @@ async function loadCampanasKpiYTabla() {
     if (tbody) tbody.innerHTML = `<tr><td colspan="4" class="text-center text-muted">Error cargando campañas</td></tr>`;
   }
 }
-/* ========================
- * Reportes recientes
- * ======================*/
+
 async function loadReportesRecientes() {
   try {
     let rows = await tryFirst(['/api/reportes', '/reportes']);
     if (!Array.isArray(rows)) rows = [];
 
-    // Orden: más nuevos primero por fecha (fallback a id)
+    // Orden: más nuevos primero por fecha 
     rows = rows.map(normalizeRow)
       .sort((a, b) => {
         const da = new Date(a.fecha || a.FECHA || 0);
@@ -363,7 +341,7 @@ function renderMoney(elId, amount, locale='es-CR', currency='CRC') {
   const parts = new Intl.NumberFormat(locale, { style:'currency', currency }).formatToParts(Number(amount||0));
   const symbol  = parts.find(p => p.type === 'currency')?.value ?? '';
   const integer = parts.filter(p => p.type === 'integer' || p.type === 'group').map(p => p.value).join('');
-  const fraction= parts.find(p => p.type === 'fraction')?.value; // puede venir vacío según configuración
+  const fraction= parts.find(p => p.type === 'fraction')?.value; 
 
   el.innerHTML = `
     <span class="symbol">${symbol}</span>

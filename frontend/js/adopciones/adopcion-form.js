@@ -1,4 +1,3 @@
-// /js/adopciones/adopcion-form.js
 import { makeRequest, getAuthData, normalizeRow } from '/js/utils.js';
 
 const $ = (id) => document.getElementById(id);
@@ -68,7 +67,6 @@ function validate(){
   if (!fecha) err.push('La fecha es requerida');
 
   if (EDIT) {
-    // nada más que validar
   } else {
     const mascota = Number($('mascota')?.value);
     const usuario = Number($('usuario')?.value);
@@ -104,7 +102,7 @@ async function onSubmit(e){
       location.href = `/pages/adopciones/detalle-adopcion.html?id=${encodeURIComponent(ADOPCION_ID)}&success=ok`;
     } else {
       const body = {
-        fecha: $('fecha').value,                 // 'YYYY-MM-DD'
+        fecha: $('fecha').value,                
         mascota: Number($('mascota').value),
         usuario: Number($('usuario').value)
       };

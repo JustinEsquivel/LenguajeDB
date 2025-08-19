@@ -5,13 +5,11 @@
   <title>Detalle de Campaña - Dejando Huella</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-  <!-- Estilos -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
-  <!-- Header dinámico -->
   <div id="siteHeader"></div>
 
   <main class="container my-4">
@@ -55,7 +53,6 @@
           </div>
         </div>
 
-        <!-- Tarjeta de donaciones: OCULTA por defecto (solo admin la verá) -->
         <div id="donacionesCard" class="card shadow-sm d-none">
           <div class="card-header bg-white">
             <strong><i class="fas fa-hand-holding-heart me-1"></i> Donaciones</strong>
@@ -76,7 +73,7 @@
             </div>
           </div>
         </div>
-      </div><!-- /col izquierda -->
+      </div>
 
       <div class="col-lg-5">
         <div class="card shadow-sm">
@@ -84,7 +81,6 @@
             <strong><i class="fas fa-paper-plane me-1"></i> Realizar una donación</strong>
           </div>
           <div class="card-body">
-            <!-- Nota: se oculta si no hay usuario logueado -->
             <div id="donarWrapper">
               <form id="donarForm" class="row g-3">
                 <div class="col-12">
@@ -112,17 +108,15 @@
             </div>
           </div>
         </div>
-      </div><!-- /col derecha -->
+      </div>
     </div>
   </main>
 
-  <!-- Scripts -->
   <script type="module" src="/js/utils.js"></script>
   <script type="module" src="/js/ui/header.js"></script>
   <script type="module">
     import { getAuthData } from '/js/utils.js';
 
-    // mostrar/ocultar el formulario según sesión
     const u = getAuthData();
     if (!u) {
       document.getElementById('donarWrapper')?.classList.add('d-none');
@@ -132,7 +126,6 @@
       document.getElementById('loginAdvice')?.classList.add('d-none');
     }
 
-    // botón "ver donaciones (admin)" + mostrar tarjeta solo a admin
     const isAdmin = !!(u && Number(u.rol) === 1);
     const qs = new URLSearchParams(location.search);
     const id = qs.get('id');
@@ -145,7 +138,6 @@
       }
       card?.classList.remove('d-none');
     } else {
-      // aseguramos oculto para no-admin
       card?.classList.add('d-none');
     }
   </script>

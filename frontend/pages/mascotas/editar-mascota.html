@@ -5,13 +5,11 @@
   <title>Editar Mascota - Dejando Huella</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-  <!-- Estilos -->
   <link rel="stylesheet" href="/css/style.css">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-  <!-- Header dinámico por rol -->
   <div id="siteHeader"></div>
 
   <main class="container my-4">
@@ -21,17 +19,14 @@
       </div>
 
       <div class="card-body">
-        <!-- Loader -->
         <div id="loadingIndicator" class="text-center py-4">
           <div class="spinner-border text-primary"></div>
           <p class="mb-0">Cargando...</p>
         </div>
 
-        <!-- Errores -->
         <div id="errorSummary" class="alert alert-danger d-none"></div>
         <div id="successBox" class="alert alert-success d-none"></div>
 
-        <!-- Formulario -->
         <form id="mascotaForm" class="d-none" novalidate>
           <input type="hidden" id="mascotaId">
 
@@ -87,7 +82,6 @@
     </div>
   </main>
 
-  <!-- Scripts -->
   <script type="module" src="/js/utils.js"></script>
   <script type="module" src="/js/ui/header.js"></script>
   <script type="module" src="/js/mascotas/mascota-editar.js"></script>
@@ -98,10 +92,8 @@
     const qs = new URLSearchParams(location.search);
     const id = qs.get('id');
 
-    // Solo admin
     const user = getAuthData();
     if (!user || Number(user.rol) !== 1) {
-      // si no es admin, a inicio
       location.href = '/index.html';
     }
 
@@ -120,7 +112,6 @@
     const fotoBox= document.getElementById('currentFoto');
     const cancel = document.getElementById('cancelLink');
 
-    // ajustar link cancelar
     if (id && cancel) cancel.href = `detalle-mascota.html?id=${encodeURIComponent(id)}`;
 
     if (!id) {
@@ -161,7 +152,6 @@
       errBox.classList.add('d-none');
       okBox.classList.add('d-none');
 
-      // validación simple
       if (!nomEl.value.trim() || !razaEl.value.trim() || String(edadEl.value).trim()==='') {
         return showError('Nombre, raza y edad son obligatorios.', errBox);
       }

@@ -1,4 +1,3 @@
-// /js/eventos/eventos-form.js
 import { makeRequest, getAuthData } from '/js/utils.js';
 
 let EDIT = false;
@@ -18,7 +17,6 @@ function escapeHtml(str='') {
 }
 
 function setDateTimeLocal(inputEl, value){
-  // Convierte cualquier fecha (Date/ISO/oracle) a "YYYY-MM-DDTHH:mm" en zona local
   if (!inputEl) return;
   if (!value) { inputEl.value = ''; return; }
   const d = (value instanceof Date) ? value : new Date(value);
@@ -37,8 +35,7 @@ function toPayload(){
   return {
     nombre:      $('nombre').value.trim(),
     descripcion: $('descripcion').value.trim() || null,
-    // Enviar tal cual lo entrega <input type="datetime-local">
-    fecha:       $('fecha').value, // "YYYY-MM-DDTHH:mm"
+    fecha:       $('fecha').value, 
     ubicacion:   $('ubicacion').value.trim() || null,
     responsable: Number($('responsable').value),
     tipo:        $('tipo').value,
@@ -107,7 +104,6 @@ async function loadEvento(id){
     $('ubicacion').value = row.ubicacion || '';
     $('responsable').value = row.responsable || row.responsable_id || '';
 
-    // selects: asegúrate que existan las opciones exactas
     $('tipo').value   = (row.tipo === 'Virtual' ? 'Virtual' : 'Presencial');
     $('estado').value = ['En curso','Planificado','Finalizado'].includes(row.estado) ? row.estado : 'Planificado';
 
@@ -149,7 +145,6 @@ async function onSubmit(e){
     } else {
       const created = await makeRequest('/api/eventos', 'POST', payload);
       const newId = created?.id;
-      // Si quieres volver al admin:
       if (newId) location.href = `/pages/eventos/detalle-evento.html?id=${encodeURIComponent(newId)}`;
       else location.href = '/pages/eventos/eventos-admin.html';
     }

@@ -1,4 +1,3 @@
-// ES Module
 import { makeRequest, normalizeRow } from '/js/utils.js';
 
 let EDIT = false;
@@ -53,7 +52,7 @@ function setDateVal(id,v){ const el=document.getElementById(id); if (el) el.valu
 function getPayload(){
   return {
     usuario: Number(document.getElementById('usuario').value),
-    fechaInicio: document.getElementById('fechaInicio').value, // YYYY-MM-DD
+    fechaInicio: document.getElementById('fechaInicio').value, 
     fechaFin: document.getElementById('fechaFin')?.value || null,
     horas: Number(document.getElementById('horas').value) || 0,
     estado: document.getElementById('estado').value

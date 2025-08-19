@@ -1,4 +1,3 @@
-// /frontend/js/eventos/eventos-admin.js
 import { makeRequest } from '../utils.js';
 
 function esc(s=''){
@@ -36,7 +35,6 @@ async function loadEventos(search=''){
   try {
     let data = [];
     if (search) {
-      // Ajusta si tu backend usa otra ruta para búsqueda
       data = await makeRequest('/api/eventos-search', 'POST', { search });
     } else {
       data = await makeRequest('/api/eventos', 'GET');

@@ -5,7 +5,6 @@ const Usuario = require('../models/usuario');
 const SALT_ROUNDS = 10;
 
 class AuthService {
-  // Registrar usuario con hash
   async registerUser(userData) {
     try {
       const existingUser = await Usuario.findByEmail(userData.email);
@@ -19,7 +18,6 @@ class AuthService {
       const newUser = await Usuario.create(userData);
       if (!newUser) return { success: false, message: 'Error al crear el usuario' };
 
-      // Nunca regresamos el hash
       const { password, PASSWORD, ...safe } = newUser;
       return { success: true, user: safe };
     } catch (error) {
@@ -28,32 +26,26 @@ class AuthService {
     }
   }
 
-  // Autenticar usuario
   async authenticateUser(email, password) {
     try {
       const user = await Usuario.findByEmail(email);
       if (!user) return null;
 
-      // Oracle puede traer MAYÚSCULAS
       const dbHash = user.PASSWORD ?? user.password ?? null;
 
       if (!dbHash) {
-        // el usuario no tiene password almacenado
         return null;
       }
 
       let ok = false;
       if (typeof dbHash === 'string' && dbHash.startsWith('$2')) {
-        // Bcrypt
         ok = await bcrypt.compare(password, dbHash);
       } else {
-        // Datos viejos en texto plano
         ok = String(password) === String(dbHash);
       }
 
       if (!ok) return null;
 
-      // Armar objeto seguro (sin password)
       const safeUser = {
         id:       user.ID ?? user.id,
         email:    user.EMAIL ?? user.email,
@@ -68,7 +60,6 @@ class AuthService {
     }
   }
 
-  // (opcional) sesiones con express-session
   createUserSession(req, user) {
     req.session.regenerate((err) => {
       if (err) { console.error('Error al regenerar sesión:', err); throw err; }

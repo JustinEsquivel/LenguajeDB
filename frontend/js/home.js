@@ -12,7 +12,6 @@ async function countMascotas() {
 }
 
 async function countAdopciones() {
-  // si no tienes ruta aún, devuelve 0 sin romper
   const list = await makeRequest('/adopciones').catch(() => []);
   return Array.isArray(list) ? list.length : 0;
 }
@@ -20,7 +19,6 @@ async function countAdopciones() {
 async function countVoluntariosActivos() {
   const list = await makeRequest('/voluntarios').catch(() => []);
   if (!Array.isArray(list)) return 0;
-  // normaliza mayúsculas/minúsculas de propiedades
   return list.filter(v => (v.estado ?? v.ESTADO) === 'Activo').length;
 }
 
